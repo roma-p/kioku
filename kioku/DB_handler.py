@@ -89,7 +89,7 @@ class DB_handler(metaclass=Singleton):
 		return True
 
 	# executing request  ''''''''''''''''''''''''''''''''''''''''''''''''''''''
-	
+
 
 	def sqlR(func):
 		@functools.wraps(func)
@@ -99,8 +99,11 @@ class DB_handler(metaclass=Singleton):
 				return
 			cursor = self.kiokuDB.cursor()
 			cursor.execute(result)
-			return cursor.fetchall()
+			r =  cursor.fetchall()
+			return tuple(r)
+
 		return executing_R
+
 
 
 	@sqlR

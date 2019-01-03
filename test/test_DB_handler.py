@@ -34,10 +34,10 @@ class TestDB_Handler(unittest.TestCase) :
 		a = db_handler.select("vocab", "word", "categorie")
 		b = db_handler.select("vocab", "word", categorie = "a_cat")
 		c = db_handler.select("vocab", "word", 'prononciation', categorie = "a_cat", tag = "c_tag")
-		
-		self.assertEqual(a, [('word_1', 'a_cat'), ('word_2', 'a_cat'), ('word_3', 'b_cat')])
-		self.assertEqual(b, [('word_1',), ('word_2',)])
-		self.assertEqual(c, [('word_2', 'hastuon_2')])
+
+		self.assertEqual(a, (('word_1', 'a_cat'), ('word_2', 'a_cat'), ('word_3', 'b_cat')))
+		self.assertEqual(b, (('word_1',), ('word_2',)))
+		self.assertEqual(c, (('word_2', 'hastuon_2'),))
 
 		d = db_handler.count("vocab", categorie = "a_cat")
 		self.assertEqual(d, 2)
