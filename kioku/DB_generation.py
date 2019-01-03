@@ -29,7 +29,8 @@ def generateDB(dbPath):
         meaning TEXT,
         exemple TEXT,
         categorie TEXT,
-        tag TEXT
+        tag TEXT, 
+        date TEXT, 
         )
         """)
 

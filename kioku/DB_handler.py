@@ -1,11 +1,10 @@
-import os 
-import logging
+import os, datetime, logging
 import sqlite3
 import functools
 log = logging.getLogger() 
 
 base_format = {
-	"vocab" : ('categorie','tag','word','prononciation','meaning','exemple'),
+	"vocab" : ('categorie','tag','word','prononciation','meaning','exemple','date'),
 	"categorie" : ("name"),
 	"tag" : ("name")
 	}
@@ -59,7 +58,9 @@ class DB_handler(metaclass=Singleton):
 
 	def add(self, base, *dataList):
 
-		for data in dataList : 
+		for data in dataList :
+			now = datetime.datetime.now()
+			data += (str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute),)
 			if not self._check_entry(base, data):
 				log.error("failed adding to base "+base+" data : "+str(data))
 				return None
