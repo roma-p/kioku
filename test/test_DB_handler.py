@@ -18,11 +18,12 @@ class TestDB_Handler(unittest.TestCase) :
 		pass
 
 	def test_dbHandler(self):
-		db_handler = DB_handler(working_db)
-		db_handler_2 = DB_handler(working_db)
+		db_handler_a = DB_handler(working_db)
+		db_handler = DB_handler()
 			
+
 		# checking singleton. 
-		self.assertEqual(id(db_handler), id(db_handler_2))
+		self.assertEqual(id(db_handler), id(db_handler_a))
 
 		lol = [
 			("a_cat", "a_tag", "word_1", "hastuon_1", "a_meaning", "a_exemple"),
