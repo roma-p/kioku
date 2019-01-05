@@ -45,6 +45,7 @@ class TestDB_Handler(unittest.TestCase) :
 
 
 		del(db_handler)
+		db_handler = DB_handler()
 
 if __name__ == '__main__':
     unittest.main()
