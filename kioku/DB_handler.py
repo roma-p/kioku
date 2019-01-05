@@ -1,6 +1,7 @@
 import os, datetime, logging
 import sqlite3
 import functools
+import conf_path
 log = logging.getLogger() 
 
 base_format = {
@@ -26,18 +27,30 @@ class Singleton(type) :
         return cls._instances[cls]
 
 
-class DB_handler(metaclass=Singleton):
+class DB_handler():
 		
-	def __init__(self, path_DB):
-		if not os.path.exists(path_DB):
-			log.critical("DB not found on "+path_DB)
-			return None
-		self.kiokuDB = sqlite3.connect(path_DB)
+	_instance = None
+	
+	def __init__(cls):
 
-	def __del__(self):
-			self.kiokuDB.commit()
-			self.kiokuDB.close()
-			del(self.kiokuDB)
+		if not cls._instance : 	 
+			if not os.path.exists(conf_path.path): 
+				log.critical("config file not found : "+conf_path.path)
+				return None
+			parser = configparser.SafeConfigParser()
+			parser.read(conf_path.path)		
+			path_DB = parser.get('kioku', 'db_path')
+			if not os.path.exists(path_DB):
+				log.critical("DB not found on "+path_DB)
+				return None
+			cls.kiokuDB = sqlite3.connect(path_DB)
+
+		return cls._instance
+
+	def __del__(cls):
+			cls.kiokuDB.commit()
+			cls.kiokuDB.close()
+			del(cls.kiokuDB)
 
 	# Public method ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
 
@@ -102,7 +115,6 @@ class DB_handler(metaclass=Singleton):
 			cursor.execute(result)
 			r =  cursor.fetchall()
 			return tuple(r)
-
 		return executing_R
 
 
