@@ -1,7 +1,7 @@
-import os, datetime, logging
+import os, datetime, logging, configparser
 import sqlite3
 import functools
-import conf_path
+import kioku.conf_path as conf_path
 log = logging.getLogger() 
 
 base_format = {
@@ -22,35 +22,36 @@ class Singleton(type) :
 
     _instances = {}
     def __call__(cls, *args, **kwargs):
+
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
-class DB_handler():
+class DB_handler(metaclass=Singleton):
 		
-	_instance = None
-	
-	def __init__(cls):
 
-		if not cls._instance : 	 
-			if not os.path.exists(conf_path.path): 
-				log.critical("config file not found : "+conf_path.path)
+	def __init__(self, db_path = ''):
+	 
+		if not db_path : 
+			if not os.path.exists(conf_path.path()): 
+				log.critical("config file not found : "+conf_path.path())
 				return None
 			parser = configparser.SafeConfigParser()
-			parser.read(conf_path.path)		
-			path_DB = parser.get('kioku', 'db_path')
-			if not os.path.exists(path_DB):
-				log.critical("DB not found on "+path_DB)
-				return None
-			cls.kiokuDB = sqlite3.connect(path_DB)
+			parser.read(conf_path.path())		
+			db_path = parser.get('kioku', 'db_path')
+		if not os.path.exists(db_path):
+			log.critical("DB not found on "+db_path)
+			return None
+		self.kiokuDB = sqlite3.connect(db_path)
 
-		return cls._instance
 
-	def __del__(cls):
-			cls.kiokuDB.commit()
-			cls.kiokuDB.close()
-			del(cls.kiokuDB)
+	def __del__(self):
+
+			self.kiokuDB.commit()
+			self.kiokuDB.close()
+			del(self.kiokuDB)
+			cls._instances = {}
 
 	# Public method ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
 
