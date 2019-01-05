@@ -1,14 +1,33 @@
-import sys
-import os
-import csv
-import sqlite3
-import datetime
+import sys, os, csv 
+import sqlite3, datetime, configparser
 from shutil import copyfile
 from kioku.DB_handler import DB_handler
+import conf_path
 
 
 # shall already be connected to database.
 db_handler = DB_handler()
+
+
+def _parseConf(): 
+    """
+    return the configuration data.
+    """
+    parser = configparser.SafeConfigParser()
+    parser.read(conf_path.path)
+    return parser._sections['kioku']
+
+
+def _generateFileName(path, fileName, suffix = ''):
+    """
+    return string as path + fileName + suffix + current time. 
+    """
+    now = datetime.datetime.now()
+    now_str = str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute)
+    if suffix : suffix = '_'+ suffix
+
+    return path + '/' + fileName + '_' + now_str + suffix + ".csv"
+
 
 def _is_cjk(character):
     """"
@@ -30,34 +49,14 @@ def _is_cjk(character):
                 ])
 
 
-def countCharac(string, character):
-    count = 0
-    for c in string:
-        if c == character:
-            count += 1
-    return count
+def _delTrailingSpaces(string): return string.lstrip(' ')
 
-def _delTrailingSpaces(string):
-    return string.lstrip(' ')
-
-
-if len(sys.argv)<1 :
-	print('missing argument')
-	sys.exit(1)
 
 def parse(inputFile):
 
-    dir = os.path.dirname(__file__)
-    currentDir = os.path.join(dir, '')
+    config_data = _parseConf()
 
-    now = datetime.datetime.now()
-    copyfile(inputFile, currentDir+'../savedFiles/inputFiles/inputFiles'+str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute))
-
-    # Connexion to BDD
-    # kioku = sqlite3.connect(currentDir+'../kioku_1.db')
-    # cursor = kioku.cursor()
-    # cursor.execute("""SELECT word FROM vocab""")
-    # existing_kanjis = [row[0] for row in cursor.fetchall()]
+    copyfile(inputFile, _generateFileName(config_data['input_files_bk'], 'input'))
 
     existing_kanjis = db_handler.select("vocab", "word")
 
@@ -106,7 +105,7 @@ def parse(inputFile):
 
                     # x) Potentials errors : Full phrase.
                     if len(potentialKanjis) > 7:
-                        print('potential error :' + potentialKanjis)
+                        log.error('potential error :' + potentialKanjis)
                         potentialErrors.append(row)
 
                     # 2) just kanjis and prononciation
@@ -126,26 +125,25 @@ def parse(inputFile):
                 if word not in existing_kanjis :
                     newEntriesList.append(['','',word, prononciation, french, exemple])
                 else :
-                    print('already exists : '+word)
+                    log.error('already exists : '+word)
 
 
     nb_of_files = len(newEntriesList)//100
     if len(newEntriesList)%100 != 0 :
         nb_of_files += 1
 
-
-    fileNamePrefix = 'int_'+str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute)+'_'
-
     for nb in range(1, nb_of_files+1, 1):
-        with open(currentDir+'../savedFiles/intermediateFiles/'+fileNamePrefix+str(nb)+'.csv', 'w') as fout:
+        fileName = _generateFileName(config_data["intermediate_files_bk"]  "int", str(nb))
+        with open(fileName, 'w') as fout:
             writer = csv.writer(fout, delimiter= '	')
             writer.writerow(['categorie','tag','word','prononciation','meaning','exemple'])
             for entry in newEntriesList[100 * (nb - 1) : 100 * nb] : 
                 writer.writerow(entry)
 
-    with open(currentDir+'../savedFiles/intermediateFiles/'+fileNamePrefix+'_pottentialErrors'+'.csv', 'w') as fout:
+    fileName = _generateFileName(config_data["intermediate_files_bk"]  "int", '_pottentialErrors')
+    with open(fileName, 'w') as fout:
         writer = csv.writer(fout, delimiter= '	')
         for error in potentialErrors:
             writer.writerow(error)
-            print(error)
+            log.error(error)
     return 
