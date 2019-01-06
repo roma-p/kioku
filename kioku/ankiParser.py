@@ -2,20 +2,15 @@ import sys, os, csv
 import sqlite3, datetime, configparser
 from shutil import copyfile
 from kioku.DB_handler import DB_handler
-import conf_path
-
-
-# shall already be connected to database.
-db_handler = DB_handler()
-
+import kioku.configuration as configuration
 
 def _parseConf(): 
     """
-    return the configuration data.
+    return the sections 'kioku' of configuration data 
     """
-    parser = configparser.SafeConfigParser()
-    parser.read(conf_path.path)
-    return parser._sections['kioku']
+    config_data = configuration.getConfiguration()
+    if not config_data : return None
+    return config_data._sections['kioku']
 
 
 def _generateFileName(path, fileName, suffix = ''):
@@ -25,7 +20,6 @@ def _generateFileName(path, fileName, suffix = ''):
     now = datetime.datetime.now()
     now_str = str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute)
     if suffix : suffix = '_'+ suffix
-
     return path + '/' + fileName + '_' + now_str + suffix + ".csv"
 
 
@@ -54,6 +48,10 @@ def _delTrailingSpaces(string): return string.lstrip(' ')
 
 def parse(inputFile):
 
+    # getting configuration and BD. 
+
+    
+    db_handler = DB_handler()
     config_data = _parseConf()
 
     copyfile(inputFile, _generateFileName(config_data['input_files_bk'], 'input'))
@@ -133,14 +131,14 @@ def parse(inputFile):
         nb_of_files += 1
 
     for nb in range(1, nb_of_files+1, 1):
-        fileName = _generateFileName(config_data["intermediate_files_bk"]  "int", str(nb))
+        fileName = _generateFileName(config_data["intermediate_files_bk"], "int", str(nb))
         with open(fileName, 'w') as fout:
             writer = csv.writer(fout, delimiter= '	')
             writer.writerow(['categorie','tag','word','prononciation','meaning','exemple'])
             for entry in newEntriesList[100 * (nb - 1) : 100 * nb] : 
                 writer.writerow(entry)
 
-    fileName = _generateFileName(config_data["intermediate_files_bk"]  "int", '_pottentialErrors')
+    fileName = _generateFileName(config_data["intermediate_files_bk"],  "int", '_pottentialErrors')
     with open(fileName, 'w') as fout:
         writer = csv.writer(fout, delimiter= '	')
         for error in potentialErrors:

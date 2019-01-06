@@ -1,31 +1,17 @@
 import logging, sys, os, datetime
 import configparser, sqlite3
-from ankiParser import ankiParser
-import kioku.conf_path as conf_path
-from db_handling import db_generation, DB_handler
+
+import kioku.ankiParser as ankiParser
+import kioku.configuration as configuration
+from kioku.DB_handler import DB_handler
+import kioku.db_generation as db_generation
+
 
 log = logging.getLogger()
 
-
-# to put as enclose. 
-config_data = None
-
-
-def getConfig_data() : 
-
-	if not config_data : 
-		if not os.path.exists(conf_path.path()): 
-			log.error('config not found on :'+ conf_path.path())
-			return None
-		else : 
-			config_data = configparser.SafeConfigParser()
-			config_data.read(conf_path.path())
-	return config_data
-
-
 def init_kioku() : 
 
-	db_path = getConfig_data().get('kioku', 'db_path')
+	db_path = configuration.getConfiguration().get('kioku', 'db_path')
 	if not os.path.exists(db_path) : 
 		log.warning("database not found at : " + db_path)
 		log.warning("instanciating a fresh one.")
@@ -42,7 +28,7 @@ def backup_DB(backupName) :
 	if backupName[:-3] != '.db':
 		log.error('backup files are .db')
 		return
-	config_data = getConfig_data()		
+	config_data = configuration.getConfiguration()		
 	db_path = config_data.get('kioku', 'db_path')
 	db_bk = config_data.get('kioku', 'db_bk')
 	backup_path = backupName + backupName
@@ -51,7 +37,7 @@ def backup_DB(backupName) :
 
 def reset_DB() : 
 
-	config_data = getConfig_data()
+	config_data = configuration.getConfiguration()
 	db_path = config_data.get('kioku', 'db_path')
 	db_bk = config_data.get('kioku', 'db_bk')
 	bdd_name = db_path.split('/')[-1].split('.db')[0]

@@ -1,7 +1,7 @@
 import os, datetime, logging, configparser
 import sqlite3
 import functools
-import kioku.conf_path as conf_path
+import kioku.configuration as configuration
 log = logging.getLogger() 
 
 base_format = {
@@ -22,7 +22,6 @@ class Singleton(type) :
 
     _instances = {}
     def __call__(cls, *args, **kwargs):
-
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
@@ -34,12 +33,9 @@ class DB_handler(metaclass=Singleton):
 	def __init__(self, db_path = ''):
 	 
 		if not db_path : 
-			if not os.path.exists(conf_path.path()): 
-				log.critical("config file not found : "+conf_path.path())
-				return None
-			parser = configparser.SafeConfigParser()
-			parser.read(conf_path.path())		
-			db_path = parser.get('kioku', 'db_path')
+			config_data = configuration.getConfiguration()		
+			if not config_data : return None 
+			db_path = config_data.get('kioku', 'db_path')
 		if not os.path.exists(db_path):
 			log.critical("DB not found on "+db_path)
 			return None

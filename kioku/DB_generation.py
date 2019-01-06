@@ -30,8 +30,7 @@ def generateDB(dbPath):
         exemple TEXT,
         categorie TEXT,
         tag TEXT, 
-        date TEXT, 
-        )
+        date TEXT)
         """)
 
     cursor.execute("""
