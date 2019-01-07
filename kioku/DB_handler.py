@@ -6,8 +6,8 @@ log = logging.getLogger()
 
 base_format = {
 	"vocab" : ('categorie','tag','word','prononciation','meaning','exemple','date'),
-	"categorie" : ("name"),
-	"tag" : ("name")
+	"categorie" : (("name",)),
+	"tag" : (("name",))
 	}
 
 
@@ -69,8 +69,9 @@ class DB_handler(metaclass=Singleton):
 	def add(self, base, *dataList):
 
 		for data in dataList :
-			now = datetime.datetime.now()
-			data += (str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute),)
+			if base == "vocab" : 
+				now = datetime.datetime.now()
+				data += (str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute),)
 			if not self._check_entry(base, data):
 				log.error("failed adding to base "+base+" data : "+str(data))
 				return None
@@ -86,7 +87,7 @@ class DB_handler(metaclass=Singleton):
 		expected_len = len(base_format[base])
 		given_len = len(row)
 		if expected_len != given_len: 
-			log.error("format not matching, expected: "+str(expected_len), "got: "+str(given_len))
+			log.error("format not matching, expected: "+str(expected_len) + " got: "+str(given_len))
 			return False
 		return True
 
@@ -98,6 +99,7 @@ class DB_handler(metaclass=Singleton):
 			log.error("missing row in base "+base+" :"+str(missing))
 			return False
 		return True
+
 
 	# executing request  ''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -139,7 +141,18 @@ class DB_handler(metaclass=Singleton):
 		if not check_baseType(base): return None
 		if base not in base_format.keys():
 			log.error("base :"+base+"not found.")
-		sqlrequest = "INSERT INTO "+base+str(base_format[base])+" VALUES "+str(dataList)
+
+		# handling pottential sql syntax error due to tuple of len 1 
+		str_data = []
+		for pottential_single_tuple in [base_format[base], dataList] : 
+			if len(pottential_single_tuple) == 1 : 
+				str_data.append(str(pottential_single_tuple).replace(',', ''))
+			else : 
+				str_data.append(str(pottential_single_tuple))
+
+
+		sqlrequest = "INSERT INTO "+base+str_data[0]+" VALUES "+str_data[1]
+
 		return sqlrequest
 
 		

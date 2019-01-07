@@ -1,5 +1,5 @@
 #from .context.kioku.DB_handler import DB_handler
-import unittest, os, gc
+import unittest, os, gc, logging
 from shutil import copyfile
 from context import kioku
 from kioku.DB_handler import DB_handler
@@ -8,19 +8,26 @@ empty_db = "test/empty_db/"
 original_db = empty_db + "original.sqlite"
 working_db = empty_db + "working.sqlite"
 
+logging.basicConfig() 
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
 class TestDB_Handler(unittest.TestCase) :
+
 
 	def setUp(self):
 		copyfile(original_db, working_db)
+
+
 	def tearDown(self):
 		gc.collect()
 		os.remove(working_db)
-		pass
+
 
 	def test_dbHandler(self):
 		db_handler_a = DB_handler(working_db)
 		db_handler = DB_handler()
-			
 
 		# checking singleton. 
 		self.assertEqual(id(db_handler), id(db_handler_a))
@@ -43,6 +50,9 @@ class TestDB_Handler(unittest.TestCase) :
 		d = db_handler.count("vocab", categorie = "a_cat")
 		self.assertEqual(d, 2)
 
+		a = [(('lol'),)]
+		db_handler.add('tag', *a)
+		a = db_handler.select('tag', 'name')
 
 		del(db_handler)
 		db_handler = DB_handler()
