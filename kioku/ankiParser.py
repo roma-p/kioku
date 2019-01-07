@@ -3,6 +3,8 @@ import sqlite3, datetime, configparser
 from shutil import copyfile
 from kioku.DB_handler import DB_handler
 import kioku.configuration as configuration
+import kioku.helpers as helpers
+
 
 def _parseConf(): 
     """
@@ -17,8 +19,7 @@ def _generateFileName(path, fileName, suffix = ''):
     """
     return string as path + fileName + suffix + current time. 
     """
-    now = datetime.datetime.now()
-    now_str = str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute)
+    now_str = helpers.format_now()
     if suffix : suffix = '_'+ suffix
     return path + '/' + fileName + '_' + now_str + suffix + ".csv"
 
@@ -46,7 +47,7 @@ def _is_cjk(character):
 def _delTrailingSpaces(string): return string.lstrip(' ')
 
 
-def parse(inputFile):
+def parse(inputFile, outputDir):
 
     # getting configuration and BD. 
 
@@ -130,15 +131,16 @@ def parse(inputFile):
     if len(newEntriesList)%100 != 0 :
         nb_of_files += 1
 
+    outputDir += '/'
     for nb in range(1, nb_of_files+1, 1):
-        fileName = _generateFileName(config_data["intermediate_files_bk"], "int", str(nb))
+        fileName = _generateFileName(outputDir, "int", str(nb))
         with open(fileName, 'w') as fout:
             writer = csv.writer(fout, delimiter= '	')
             writer.writerow(['categorie','tag','word','prononciation','meaning','exemple'])
             for entry in newEntriesList[100 * (nb - 1) : 100 * nb] : 
                 writer.writerow(entry)
 
-    fileName = _generateFileName(config_data["intermediate_files_bk"],  "int", '_pottentialErrors')
+    fileName = _generateFileName(outputDir, "int", '_pottentialErrors')
     with open(fileName, 'w') as fout:
         writer = csv.writer(fout, delimiter= '	')
         for error in potentialErrors:
