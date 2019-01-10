@@ -1,6 +1,8 @@
 import os
+import logging
 import configparser
 
+log = logging.getLogger()
 # to put as enclose. 
 config_data = None
 
@@ -8,6 +10,9 @@ config_data = None
 # please modifiy path method.
 def path() : return "etc/kioku/config.ini"
 
+def reset() : 
+	global config_data
+	config_data = None
 
 def getConfiguration() : 
 

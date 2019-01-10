@@ -39,6 +39,7 @@ class DB_handler(metaclass=Singleton):
 		if not os.path.exists(db_path):
 			log.critical("DB not found on "+db_path)
 			return None
+		self.db_path = db_path
 		self.kiokuDB = sqlite3.connect(db_path)
 
 
@@ -47,7 +48,7 @@ class DB_handler(metaclass=Singleton):
 			self.kiokuDB.commit()
 			self.kiokuDB.close()
 			del(self.kiokuDB)
-			cls._instances = {}
+			self._instances = {}
 
 	# Public method ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
 

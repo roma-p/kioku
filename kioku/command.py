@@ -5,9 +5,12 @@ import kioku.ankiParser as ankiParser
 import kioku.configuration as configuration
 from kioku.DB_handler import DB_handler
 import kioku.db_generation as db_generation
+import kioku.db_update as db_update
+import kioku.helpers as helpers
 
 
 log = logging.getLogger()
+
 
 def init_kioku() : 
 
@@ -74,12 +77,72 @@ def reset_DB() :
 
 	status = init_kioku()
 	if not status : 
-		log.error("backuped done but init process failed somehow.")
+		log.error('backuped done but init process failed somehow.')
 	return status
 
 
-def update() : 
-	pass
+def update_DB(input_data) :
+
+
+	# Checking ---------------------------------------------------------------
+	status = True
+	if not os.path.exists(input_data) : 
+		log.error('file / path not found :' + input_data )
+		status = False
+	config_data = configuration.getConfiguration()
+	if not config_data : 
+		log.error('configuration data loading failed.')
+		status = False
+
+	if not status : 
+		log.error('DB not updated.')
+		return status
+
+	#TODO : need a way to check csv file integrity before modifying DB...
+
+	# Updating databse --------------------------------------------------------
+	if input_data[-3:] == 'csv' : 
+		db_update.add(input_data)
+		bk_list = [input_data]
+
+	else : 
+		fileList = db_update.add_multiple(input_data)
+		bk_list = fileList
+
+	# Backup of files ---------------------------------------------------------
+	for file in bk_list :
+		file_bk_name = _name_intermediate_file(file)
+		print(file_bk_name
+			)
+		if not file_bk_name : 
+			log.error('could not backup file : ' + original_file)
+		else : 
+			copyfile(file, file_bk_name)
+			log.info('data file backuped at : ' + file_bk_name)
+
+
+intermediate_files_bk = ''
+
+def _name_intermediate_file(original_file): 
+
+	global intermediate_files_bk
+	if not intermediate_files_bk : 
+		if not _get_intermediate_files_bk_path() : 
+			return ""
+	original_name = os.path.basename(original_file)
+	now_str = helpers.format_now()
+	new_file_name = intermediate_files_bk + '/' + original_name
+	return new_file_name
+
+
+def _get_intermediate_files_bk_path(): 
+	
+	global intermediate_files_bk
+	intermediate_files_bk = configuration.getConfiguration().get('kioku', 'intermediate_files_bk')
+	if not intermediate_files_bk : 
+		log.error('did not find path to store data file "intermediate_files_bk" in configuration file.')
+		return False
+	return True
 
 
 
