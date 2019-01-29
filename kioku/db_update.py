@@ -24,20 +24,31 @@ def add(inputFile):
     added_kanjis = []       # used for detecting siblings
     added_word = []         # listing entries to add
     
-    with open(inputFile, 'r') as fout:
-        for row in csv.reader(fout, delimiter = '	'):
-            if row[0] not in ['categorie', ''] + existing_category + added_categorie : 
-                added_categorie.append(((row[0],)))
-            if row[1] not in ['tag', ''] + existing_tag + added_tag : 
-                added_tag.append(((row[1],)))
-            if row[2] != 'word' and row[2] not in existing_kanjis + added_kanjis :    
-                added_word.append(tuple(row))
-                added_kanjis.append(row[2])
+    error_entries = []         # errors are entries tagged with keyword 'ERROR'
 
+    with open(inputFile, 'r') as fout:
+        
+        for row in csv.reader(fout, delimiter = '	'):
+            if 'ERROR' in row[1] : 
+                error_entries.append(row)
+            else : 
+                if row[0] not in ['categorie', ''] + existing_category + added_categorie : 
+                    added_categorie.append(((row[0],)))
+                if row[1] not in ['tag', ''] + existing_tag + added_tag : 
+                    added_tag.append(((row[1],)))
+                if row[2] != 'word' and row[2] not in existing_kanjis + added_kanjis :    
+                    added_word.append(tuple(row))
+                    added_kanjis.append(row[2])
+        
         for base_name, data_list in zip(["categorie", "tag", "vocab"], [added_categorie, added_tag, added_word]) : 
             db_handler.add(base_name, *data_list)
 
+    return error_entries
+
+
 def add_multiple(inputDir) : 
+
+    all_errors = []
 
     if not os.path.exists(inputDir):
         log.error('directory not found :' + inputDir)
@@ -49,8 +60,10 @@ def add_multiple(inputDir) :
     added_file = []
     for file in glob.glob(inputDir + "/*.csv"):
         log.info('adding data from : ' + file)
-        add(file)
+        errors = add(file)
+        all_errors += errors
         added_file.append(file)
-    return added_file
+
+    return added_file, all_errors
 
 
