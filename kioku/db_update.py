@@ -65,6 +65,7 @@ def add_multiple(inputDir) :
         added_file.append(file)
 
     return added_file, all_errors
+<<<<<<< HEAD
 
 
 def merge_cat_tag(source, dest, _type) :
@@ -92,5 +93,7 @@ def merge_cat_tag(source, dest, _type) :
 
 
 
+=======
+>>>>>>> origin/master
 
 
