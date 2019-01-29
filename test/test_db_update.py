@@ -46,6 +46,8 @@ class TestDB_Handler(unittest.TestCase):
 
 	def test_add(self):
 		db_handler = DB_handler()
+		print(db_handler)
+		print(db_handler.db_path)
 		db_update.add(inputFile_1)
 		kanjis_list = db_handler.select('vocab', 'word')
 		len_kanjis = len(kanjis_list)

@@ -10,7 +10,6 @@ base_format = {
 	"tag" : (("name",))
 	}
 
-
 def check_baseType(baseName) :
 	if baseName not in base_format.keys():
 		log.error("base :"+baseName+" not existing.")
@@ -139,6 +138,7 @@ class DB_handler(metaclass=Singleton):
 
 	@sqlR
 	def _req_add(self, base, *dataList):
+
 		if not check_baseType(base): return None
 		if base not in base_format.keys():
 			log.error("base :"+base+"not found.")
@@ -156,6 +156,18 @@ class DB_handler(metaclass=Singleton):
 
 		return sqlrequest
 
-		
+	def _req_del(self, base, **conditions): 
+
+		if not check_baseType(base): return None
+		sqlrequest = "DELETE FROM "+base
+		if conditions : 
+			sqlrequest += " WHERE "
+			#for condition
+
+
+
+
+
+
 
 

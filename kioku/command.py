@@ -1,9 +1,10 @@
-import logging, sys, os, datetime
+import logging, sys, os, datetime, csv
 import configparser, sqlite3
 from shutil import copyfile
 import kioku.ankiParser as ankiParser
 import kioku.configuration as configuration
 from kioku.DB_handler import DB_handler
+import kioku.DB_handler as _DB_handler
 import kioku.db_generation as db_generation
 import kioku.db_update as db_update
 import kioku.helpers as helpers
@@ -102,26 +103,47 @@ def update_DB(input_data) :
 
 	# Updating databse --------------------------------------------------------
 	if input_data[-3:] == 'csv' : 
-		db_update.add(input_data)
+		errors = db_update.add(input_data)
 		bk_list = [input_data]
 
 	else : 
-		fileList = db_update.add_multiple(input_data)
+		fileList, errors = db_update.add_multiple(input_data)
 		bk_list = fileList
 
 	# Backup of files ---------------------------------------------------------
 	for file in bk_list :
 		file_bk_name = _name_intermediate_file(file)
-		print(file_bk_name
-			)
 		if not file_bk_name : 
 			log.error('could not backup file : ' + original_file)
 		else : 
 			copyfile(file, file_bk_name)
 			log.info('data file backuped at : ' + file_bk_name)
 
+	# Treating errors ---------------------------------------------------------
+	if not errors : 
+		log.info('no entry tagged as error detected')
+	else : 
+		log.warning(str(len(errors))+' entries tagged as error detected')
+		write_error_file(errors)
+
+
+def write_error_file(errors): 
+
+	first_row = _DB_handler.base_format['vocab']
+	errors_treated = list(first_row) + errors
+	file_path = _name_error_path()
+	if not file_path : 
+		log.error('could not backup errors files')
+	else : 
+		with open(file_path, "w") as f:
+			writer = csv.writer(f)
+			writer.writerows(errors_treated)
+		log.info('detected errors savec here : ' + file_path)
+
 
 intermediate_files_bk = ''
+error_file_name = 'errors_'
+
 
 def _name_intermediate_file(original_file): 
 
@@ -130,8 +152,21 @@ def _name_intermediate_file(original_file):
 		if not _get_intermediate_files_bk_path() : 
 			return ""
 	original_name = os.path.basename(original_file)
+	# TODO : shall use now str to keep coherence with error name.
 	now_str = helpers.format_now()
 	new_file_name = intermediate_files_bk + '/' + original_name
+	return new_file_name
+
+
+def _name_error_path(): 
+
+	global intermediate_files_bk
+	global error_file_name
+	if not intermediate_files_bk : 
+		if not _get_intermediate_files_bk_path() : 
+			return ""
+	now_str = helpers.format_now()
+	new_file_name = intermediate_files_bk + '/' + error_file_name+now_str
 	return new_file_name
 
 
