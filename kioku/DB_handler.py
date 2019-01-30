@@ -79,6 +79,21 @@ class DB_handler(metaclass=Singleton):
 		self.kiokuDB.commit()
 
 
+	def delete(self, base, **conditions): 
+		self._req_del(base, **conditions)
+		self.kiokuDB.commit()
+
+
+	def replace(self, base, fieldReplaced, originalValue, newValue, **conditions): 
+		conditions[fieldReplaced] = originalValue
+		self._req_update(base, fieldReplaced, newValue, **conditions)
+		self.kiokuDB.commit()
+
+
+	def update(self, base, updated_field, updated_value, **conditions): 
+		self._req_update(base, updated_field, updated_value, **conditions)
+		self.kiokuDB.commit()
+
 	# checkers ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 
@@ -108,8 +123,7 @@ class DB_handler(metaclass=Singleton):
 		@functools.wraps(func)
 		def executing_R(self, base, *args, **kwargs):
 			result = func(self, base, *args, **kwargs)
-			if result == None:
-				return
+			if result == None:return
 			cursor = self.kiokuDB.cursor()
 			cursor.execute(result)
 			r =  cursor.fetchall()
@@ -128,11 +142,7 @@ class DB_handler(metaclass=Singleton):
 			for item in itemToGet : selector+= item +', '
 			selector = selector[:-2]+' '
 		sqlrequest = "SELECT " + selector + " FROM " + base
-		if conditions :
-			sqlrequest += " WHERE "
-			for condition_id, condition_value in conditions.items() : 
-				sqlrequest += condition_id + "='"+condition_value + "' AND "
-			sqlrequest = sqlrequest[:-5]
+		if conditions : sqlrequest += self._format_conditions(**conditions)
 		return sqlrequest
 
 
@@ -150,24 +160,32 @@ class DB_handler(metaclass=Singleton):
 				str_data.append(str(pottential_single_tuple).replace(',', ''))
 			else : 
 				str_data.append(str(pottential_single_tuple))
-
-
 		sqlrequest = "INSERT INTO "+base+str_data[0]+" VALUES "+str_data[1]
-
 		return sqlrequest
 
+
+	@sqlR
 	def _req_del(self, base, **conditions): 
 
 		if not check_baseType(base): return None
 		sqlrequest = "DELETE FROM "+base
-		if conditions : 
-			sqlrequest += " WHERE "
-			#for condition
+		if conditions : sqlrequest += self._format_conditions(**conditions)
+		return sqlrequest
+
+	@sqlR
+	def _req_update(self, base, updated_field, updated_value, **conditions): 
+
+		if not check_baseType(base): return None
+		if updated_field not in base_format[base] : return None
+		sqlrequest = "UPDATE " + base + " SET " + updated_field + " = '" + updated_value+"'"
+		if conditions : sqlrequest += self._format_conditions(**conditions)
+		return sqlrequest
 
 
-
-
-
-
-
+	def _format_conditions(self, **conditions) : 
+		condition_str = " WHERE "
+		for condition_id, condition_value in conditions.items() : 
+			condition_str += condition_id + "='"+condition_value + "' AND "
+		condition_str = condition_str[:-5]
+		return condition_str
 

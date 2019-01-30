@@ -54,6 +54,17 @@ class TestDB_Handler(unittest.TestCase) :
 		db_handler.add('tag', *a)
 		a = db_handler.select('tag', 'name')
 
+		# testing update / replace / delete.
+		db_handler.replace('vocab', 'tag', 'c_tag', 'd_tag')
+		a = db_handler.select('vocab', 'word', tag = 'd_tag')
+		self.assertEqual(set(a), {('word_2',), ('word_3',)})	
+		db_handler.update('vocab', 'tag', 'e_tag', tag = 'd_tag', categorie = 'b_cat')
+		a = db_handler.select('vocab', 'word', tag = 'e_tag')		
+		self.assertEqual(set(a), {('word_3',)})
+		db_handler.delete('vocab', tag = 'e_tag')
+		a = db_handler.select('vocab', 'word', tag = 'e_tag')
+		self.assertEqual(a, ())
+
 		del(db_handler)
 		db_handler = DB_handler()
 
