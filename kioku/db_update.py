@@ -9,6 +9,10 @@ import kioku.search
 
 log = logging.getLogger()
 
+## TODO : KANJIS CAT !!! AND ASSOCIATION OF DATA
+## NEED TO LEARN MORE ABOUT OPTI:IWE BDD MANAGEMENT. 
+## ALSO REFERENCE SIMILAR PRONOMCIATION 
+
 # input file qlreqdy format (position value as key)
 def add(inputFile):
     
@@ -65,7 +69,11 @@ def add_multiple(inputDir) :
         added_file.append(file)
 
     return added_file, all_errors
-<<<<<<< HEAD
+
+
+# CAT SUIVANTE PR RENDRE LE SOFT PLUS UTILISABLE>>
+# UN UPDATE UN DELETE...
+
 
 
 def merge_cat_tag(source, dest, _type) :
@@ -74,9 +82,8 @@ def merge_cat_tag(source, dest, _type) :
         log.error('authorized types are "tag"/"cat", not : '+str(_type))
         return False
 
-    type_list = search.listTypes(_type)
-
     errors = []
+    type_list = search.listTypes(_type)
     for temp in (source, dest) : 
         if temp not in type_list : errors.append(temp)
     if errors : 
@@ -86,14 +93,5 @@ def merge_cat_tag(source, dest, _type) :
     
 
 
-
-
-
-
-
-
-
-=======
->>>>>>> origin/master
 
 

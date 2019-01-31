@@ -61,6 +61,12 @@ class DB_handler(metaclass=Singleton):
 		return data
 
 
+	def list(base, fieldToGet, **conditions) : 
+		data = self.select(base, fieldToGet, **conditions)
+		treated_data = [singleData[0] for singleData in data]
+		return tuple(treated_data)
+
+
 	def count(self, base, **conditions):
 		r = self._req_select(base, **conditions)
 		return r[0][0]
