@@ -10,9 +10,10 @@ base_format = {
 	"tag" : (("name",))
 	}
 
-def check_baseType(baseName) :
-	if baseName not in base_format.keys():
-		log.error("base :"+baseName+" not existing.")
+
+def check_table(tableName) :
+	if tableName not in base_format.keys():
+		log.error("base :"+tableName+" not existing.")
 		return False
 	return True
 
@@ -29,7 +30,7 @@ class Singleton(type) :
 class DB_handler(metaclass=Singleton):
 		
 
-	def __init__(self, db_path = ''):
+	def __init__(self, db_path = '', base_format = None):
 	 
 		if not db_path : 
 			config_data = configuration.getConfiguration()		
@@ -38,8 +39,10 @@ class DB_handler(metaclass=Singleton):
 		if not os.path.exists(db_path):
 			log.critical("DB not found on "+db_path)
 			return None
+		self.base_format = base_format
 		self.db_path = db_path
 		self.kiokuDB = sqlite3.connect(db_path)
+
 
 
 	def __del__(self):
@@ -51,60 +54,74 @@ class DB_handler(metaclass=Singleton):
 
 	# Public method ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
 
-	def select(self, base, *itemToGet, **conditions):
-		if not self._check_select(base, *itemToGet, **conditions):
+	def select(self, table, *itemToGet, **conditions):
+		if not self._check_select(table, *itemToGet, **conditions):
 			return None
-		data = self._req_select(base, *itemToGet, **conditions)
+		data = self._req_select(table, *itemToGet, **conditions)
 		if data == None :
-			log.error("error selecting"+selector+" from base "+base)
+			log.error("error selecting"+selector+" from table "+table)
 			return
 		return data
 
 
-	def list(base, fieldToGet, **conditions) : 
-		data = self.select(base, fieldToGet, **conditions)
+	def list(table, fieldToGet, **conditions) : 
+		data = self.select(table, fieldToGet, **conditions)
 		treated_data = [singleData[0] for singleData in data]
 		return tuple(treated_data)
 
 
-	def count(self, base, **conditions):
-		r = self._req_select(base, **conditions)
+	def count(self, table, **conditions):
+		r = self._req_select(table, **conditions)
 		return r[0][0]
 
 
-	def add(self, base, *dataList):
+	def add(self, table, *dataList):
 
 		for data in dataList :
-			if base == "vocab" : 
+			if table == "vocab" : 
 				now = datetime.datetime.now()
 				data += (str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute),)
-			if not self._check_entry(base, data):
-				log.error("failed adding to base "+base+" data : "+str(data))
+			if not self._check_entry(table, data):
+				log.error("failed adding to table "+table+" data : "+str(data))
 				return None
-			self._req_add(base, *data)
+			self._req_add(table, *data)
 		self.kiokuDB.commit()
 
 
-	def delete(self, base, **conditions): 
-		self._req_del(base, **conditions)
+	def delete(self, table, **conditions): 
+		self._req_del(table, **conditions)
 		self.kiokuDB.commit()
 
 
-	def replace(self, base, fieldReplaced, originalValue, newValue, **conditions): 
+	def replace(self, table, fieldReplaced, originalValue, newValue, **conditions): 
 		conditions[fieldReplaced] = originalValue
-		self._req_update(base, fieldReplaced, newValue, **conditions)
+		self._req_update(table, fieldReplaced, newValue, **conditions)
 		self.kiokuDB.commit()
 
 
-	def update(self, base, updated_field, updated_value, **conditions): 
-		self._req_update(base, updated_field, updated_value, **conditions)
+	def update(self, table, updated_field, updated_value, **conditions): 
+		self._req_update(table, updated_field, updated_value, **conditions)
 		self.kiokuDB.commit()
+
+
+	# getter ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+	def list_tables(self) : 
+		return self.base_format.keys()
+
+	def list_rows(self, tableName) : 
+		if tableName not in self.base_format.keys() : 
+			log.error('no table "'+tableName+'" found.')
+			return None
+		else : 
+			return self.base_format[tableName].keys()
+
 
 	# checkers ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 
 	def _check_entry(self, base, row) :
-		if not check_baseType(base): return False
+		if not check_table(base): return False
 		expected_len = len(base_format[base])
 		given_len = len(row)
 		if expected_len != given_len: 
@@ -113,7 +130,7 @@ class DB_handler(metaclass=Singleton):
 		return True
 
 	def _check_select(self, base, *itemToGet, **conditions):
-		if not check_baseType(base): return False
+		if not check_table(base): return False
 		shallExist = list(itemToGet) + list(conditions.keys())
 		missing = [item for item in shallExist if item not in base_format[base]]
 		if len(missing)>0 : 
@@ -155,7 +172,7 @@ class DB_handler(metaclass=Singleton):
 	@sqlR
 	def _req_add(self, base, *dataList):
 
-		if not check_baseType(base): return None
+		if not check_table(base): return None
 		if base not in base_format.keys():
 			log.error("base :"+base+"not found.")
 
@@ -173,7 +190,7 @@ class DB_handler(metaclass=Singleton):
 	@sqlR
 	def _req_del(self, base, **conditions): 
 
-		if not check_baseType(base): return None
+		if not check_table(base): return None
 		sqlrequest = "DELETE FROM "+base
 		if conditions : sqlrequest += self._format_conditions(**conditions)
 		return sqlrequest
@@ -181,7 +198,7 @@ class DB_handler(metaclass=Singleton):
 	@sqlR
 	def _req_update(self, base, updated_field, updated_value, **conditions): 
 
-		if not check_baseType(base): return None
+		if not check_table(base): return None
 		if updated_field not in base_format[base] : return None
 		sqlrequest = "UPDATE " + base + " SET " + updated_field + " = '" + updated_value+"'"
 		if conditions : sqlrequest += self._format_conditions(**conditions)
@@ -194,4 +211,39 @@ class DB_handler(metaclass=Singleton):
 			condition_str += condition_id + "='"+condition_value + "' AND "
 		condition_str = condition_str[:-5]
 		return condition_str
+
+
+	# generate DB  ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+	def generateDB(self) : 
+		dbName = self.db_path.split('/')[-1]
+		dirPath = self.db_path.split(dbName)[0]
+		if not os.path.exists(dirPath):
+        	log.error('path not found :' + dirPath)
+        	return False
+		elif os.path.exists(self.db_path):
+        	log.error('Database already exists :' + self.db_path)
+        	return False
+
+	    log.info('generating new empty kioku db.')
+    	kioku = sqlite3.connect(self.db_path)
+    	cursor = kioku.cursor()
+
+    	# TODO  TRY CATCH <<< 
+    	for tableName, tableData in self.base_format.items(): 
+    		cursor.execute(self._generateDB(tableName, tableData))
+    	return True
+
+    def _generateDB(self, tableName, tableData) : 
+
+    	command = 'CREATE TABLE IF NOT EXISTS '+tableName+'('
+    	for field_name, field_data in tableData.items(): 
+    		command+=  field_name + ' ' + field_data['type']
+    		if key in field_data.keys() : 
+    			command += field_data['key']
+    		if constraints in field_data['keys'] : 
+    			for constraint in constraints : 
+    				command += constraint
+    	return command 
+
 
