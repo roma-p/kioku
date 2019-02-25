@@ -13,6 +13,38 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
+
+base_format = {
+	'vocab' : {
+		'id' : {
+			'type' : 'INTEGER', 
+			'key' : 'PRIMARY KEY', 
+			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
+		},
+		'word' : {'type' : 'text'}, 
+		'prononciation' : {'type' : 'text'}, 
+		'meaning' : {'type' : 'text'}, 
+		'exemple' : {'type' : 'text'}, 
+		'categorie' : {'type' : 'text'}, 
+		'tag' : {'type' : 'text'}, 
+		'date' : {'type' : 'text'}
+	}, 
+	'tag' : {
+		'id' : {
+			'type' : 'INTEGER', 
+			'key' : 'PRIMARY KEY', 
+			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
+		},
+		'name' : {'type' : 'text'}	
+	}
+}
+
+class Fake_DB_handler(DB_handler):
+	def __init__(self, arg):
+		super().__init__(arg)
+		self.base_format = base_format
+	
+
 class TestDB_Handler(unittest.TestCase) :
 
 
@@ -26,8 +58,8 @@ class TestDB_Handler(unittest.TestCase) :
 
 
 	def test_dbHandler(self):
-		db_handler_a = DB_handler(working_db)
-		db_handler = DB_handler()
+		db_handler_a = Fake_DB_handler(working_db)
+		db_handler = Fake_DB_handler()
 
 		# checking singleton. 
 		self.assertEqual(id(db_handler), id(db_handler_a))
@@ -38,7 +70,8 @@ class TestDB_Handler(unittest.TestCase) :
 			("b_cat", "c_tag", "word_3", "hastuon_3", "b_meaning", "b_exemple"),		
 		]
 
-		db_handler.add("vocab",*lol)
+		dataOrder = ('categorie', 'tag', 'word', 'prononciation', 'meaning', 'exemple')
+		db_handler.add("vocab", dataOrder, *lol)
 		a = db_handler.select("vocab", "word", "categorie")
 		b = db_handler.select("vocab", "word", categorie = "a_cat")
 		c = db_handler.select("vocab", "word", 'prononciation', categorie = "a_cat", tag = "c_tag")
@@ -50,8 +83,8 @@ class TestDB_Handler(unittest.TestCase) :
 		d = db_handler.count("vocab", categorie = "a_cat")
 		self.assertEqual(d, 2)
 
-		a = [(('lol'),)]
-		db_handler.add('tag', *a)
+		a = [(('lol'),)] #uhm ... not ugly at all. 
+		db_handler.add('tag', ('name',), *a)
 		a = db_handler.select('tag', 'name')
 
 		# testing update / replace / delete.
@@ -66,7 +99,9 @@ class TestDB_Handler(unittest.TestCase) :
 		self.assertEqual(a, ())
 
 		del(db_handler)
-		db_handler = DB_handler()
+		db_handler = Fake_DB_handler()
+
+
 
 if __name__ == '__main__':
     unittest.main()

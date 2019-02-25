@@ -2,20 +2,8 @@ import os, datetime, logging, configparser
 import sqlite3
 import functools
 import kioku.configuration as configuration
+import kioku.helpers as helpers
 log = logging.getLogger() 
-
-base_format = {
-	"vocab" : ('categorie','tag','word','prononciation','meaning','exemple','date'),
-	"categorie" : (("name",)),
-	"tag" : (("name",))
-	}
-
-
-def check_table(tableName) :
-	if tableName not in base_format.keys():
-		log.error("base :"+tableName+" not existing.")
-		return False
-	return True
 
 
 class Singleton(type) :
@@ -42,8 +30,6 @@ class DB_handler(metaclass=Singleton):
 		self.base_format = base_format
 		self.db_path = db_path
 		self.kiokuDB = sqlite3.connect(db_path)
-
-
 
 	def __del__(self):
 
@@ -75,16 +61,40 @@ class DB_handler(metaclass=Singleton):
 		return r[0][0]
 
 
-	def add(self, table, *dataList):
+	def add(self, table, dataOrder, *dataList):
+
+		"""
+		add data to the given table.
+		: parameter table : name of the table to add data to. 
+		: parameter dataOrder : tuple of the name of the row 
+								which data zill be added to, in the 
+								order of the data of <dataList>
+		: parameter dataList : list of tuple of data to add to the base
+								in the order described in dataOrder.
+		"""
+
+		rowList = self.list_rows(table)
+		if not rowList : return None
+		missing= [rowName for rowName in dataOrder if rowName not in rowList] 
+		if len(missing) : 
+			log.error('unknown row name for table '+table+' :'+str(missing))
+			return None
+
+		now_str = ''
+		if 'date' in rowList : 
+			now_str = helpers.format_now()
+			dataOrder+= ('date',)
+			_dataList = []
+			for data in dataList : 
+				data += (now_str,)
+				_dataList.append(data)
+			dataList = _dataList
 
 		for data in dataList :
-			if table == "vocab" : 
-				now = datetime.datetime.now()
-				data += (str(now.year)+'.'+str(now.month)+'.'+str(now.day)+'.'+str(now.hour)+':'+str(now.minute),)
-			if not self._check_entry(table, data):
-				log.error("failed adding to table "+table+" data : "+str(data))
+			if len(data) != len(dataOrder) : 
+				log.error("failed adding to table "+table+" data : "+str(data) + "as "+str(dataOrder)+', too few or not enough data.')
 				return None
-			self._req_add(table, *data)
+			self._req_add(table, dataOrder, *data)
 		self.kiokuDB.commit()
 
 
@@ -116,25 +126,16 @@ class DB_handler(metaclass=Singleton):
 		else : 
 			return self.base_format[tableName].keys()
 
-
 	# checkers ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-
-	def _check_entry(self, base, row) :
-		if not check_table(base): return False
-		expected_len = len(base_format[base])
-		given_len = len(row)
-		if expected_len != given_len: 
-			log.error("format not matching, expected: "+str(expected_len) + " got: "+str(given_len))
-			return False
-		return True
-
-	def _check_select(self, base, *itemToGet, **conditions):
-		if not check_table(base): return False
+	def _check_select(self, tableName, *itemToGet, **conditions):
+		
+		rowList = self.list_rows(tableName)
+		if not rowList : return False
 		shallExist = list(itemToGet) + list(conditions.keys())
-		missing = [item for item in shallExist if item not in base_format[base]]
+		missing = [item for item in shallExist if item not in rowList]
 		if len(missing)>0 : 
-			log.error("missing row in base "+base+" :"+str(missing))
+			log.error("missing row in base "+tableName+" :"+str(missing))
 			return False
 		return True
 
@@ -144,8 +145,8 @@ class DB_handler(metaclass=Singleton):
 
 	def sqlR(func):
 		@functools.wraps(func)
-		def executing_R(self, base, *args, **kwargs):
-			result = func(self, base, *args, **kwargs)
+		def executing_R(self, tableName, *args, **kwargs):
+			result = func(self, tableName, *args, **kwargs)
 			if result == None:return
 			cursor = self.kiokuDB.cursor()
 			cursor.execute(result)
@@ -156,7 +157,7 @@ class DB_handler(metaclass=Singleton):
 
 
 	@sqlR
-	def _req_select(self, base, *itemToGet, **conditions):
+	def _req_select(self, table, *itemToGet, **conditions):
 		
 		if itemToGet == () : 
 			selector= "COUNT(*)"
@@ -164,43 +165,41 @@ class DB_handler(metaclass=Singleton):
 			selector = ''
 			for item in itemToGet : selector+= item +', '
 			selector = selector[:-2]+' '
-		sqlrequest = "SELECT " + selector + " FROM " + base
+		sqlrequest = "SELECT " + selector + " FROM " + table
 		if conditions : sqlrequest += self._format_conditions(**conditions)
 		return sqlrequest
 
 
 	@sqlR
-	def _req_add(self, base, *dataList):
-
-		if not check_table(base): return None
-		if base not in base_format.keys():
-			log.error("base :"+base+"not found.")
+	def _req_add(self, table, dataOrder, *dataList):
 
 		# handling pottential sql syntax error due to tuple of len 1 
 		str_data = []
-		for pottential_single_tuple in [base_format[base], dataList] : 
+		for pottential_single_tuple in [dataOrder, dataList] : 
 			if len(pottential_single_tuple) == 1 : 
 				str_data.append(str(pottential_single_tuple).replace(',', ''))
 			else : 
 				str_data.append(str(pottential_single_tuple))
-		sqlrequest = "INSERT INTO "+base+str_data[0]+" VALUES "+str_data[1]
+
+		sqlrequest = "INSERT INTO "+table+str_data[0]+" VALUES "+str_data[1]
 		return sqlrequest
 
 
 	@sqlR
-	def _req_del(self, base, **conditions): 
+	def _req_del(self, table, **conditions): 
 
-		if not check_table(base): return None
-		sqlrequest = "DELETE FROM "+base
+		if not self.list_rows(table) : return None
+		sqlrequest = "DELETE FROM "+table
 		if conditions : sqlrequest += self._format_conditions(**conditions)
 		return sqlrequest
 
 	@sqlR
-	def _req_update(self, base, updated_field, updated_value, **conditions): 
+	def _req_update(self, table, updated_field, updated_value, **conditions): 
 
-		if not check_table(base): return None
-		if updated_field not in base_format[base] : return None
-		sqlrequest = "UPDATE " + base + " SET " + updated_field + " = '" + updated_value+"'"
+		rowList = self.list_rows(table)
+		if not rowList : return None
+		if updated_field not in rowList : return None
+		sqlrequest = "UPDATE " + table + " SET " + updated_field + " = '" + updated_value+"'"
 		if conditions : sqlrequest += self._format_conditions(**conditions)
 		return sqlrequest
 
@@ -219,31 +218,32 @@ class DB_handler(metaclass=Singleton):
 		dbName = self.db_path.split('/')[-1]
 		dirPath = self.db_path.split(dbName)[0]
 		if not os.path.exists(dirPath):
-        	log.error('path not found :' + dirPath)
-        	return False
+			log.error('path not found :' + dirPath)
+			return False
 		elif os.path.exists(self.db_path):
-        	log.error('Database already exists :' + self.db_path)
-        	return False
+			log.error('Database already exists :' + self.db_path)
+			return False
 
-	    log.info('generating new empty kioku db.')
-    	kioku = sqlite3.connect(self.db_path)
-    	cursor = kioku.cursor()
+		log.info('generating new empty kioku db.')
+		kioku = sqlite3.connect(self.db_path)
+		cursor = kioku.cursor()
 
-    	# TODO  TRY CATCH <<< 
-    	for tableName, tableData in self.base_format.items(): 
-    		cursor.execute(self._generateDB(tableName, tableData))
-    	return True
+		# TODO  TRY CATCH <<< 
+		for tableName, tableData in self.base_format.items(): 
+			cursor.execute(self._generateDB(tableName, tableData))
+		return True
 
-    def _generateDB(self, tableName, tableData) : 
+	
+	def _generateDB(self, tableName, tableData) : 
 
-    	command = 'CREATE TABLE IF NOT EXISTS '+tableName+'('
-    	for field_name, field_data in tableData.items(): 
-    		command+=  field_name + ' ' + field_data['type']
-    		if key in field_data.keys() : 
-    			command += field_data['key']
-    		if constraints in field_data['keys'] : 
-    			for constraint in constraints : 
-    				command += constraint
-    	return command 
+		command = 'CREATE TABLE IF NOT EXISTS '+tableName+'('
+		for field_name, field_data in tableData.items(): 
+			command+=  field_name + ' ' + field_data['type']
+			if key in field_data.keys() : 
+				command += field_data['key']
+			if constraints in field_data['keys'] : 
+				for constraint in constraints : 
+					command += constraint
+		return command 
 
 
