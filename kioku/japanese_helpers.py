@@ -53,12 +53,22 @@ def gen_core_prononciation(word) :
 		log.error("could't generate core prononciation of "+word)
 	newWord = []
 	for character in word : 
+		# deleting accentuation 
 		if character in japanese_helpers_data.accentation_character : 
 			pass
-		elif character in japanese_helpers_data.nigoru_match.keys() : 
-			newWord.append(japanese_helpers_data.nigoru_match[character])
 		else : 
-			newWord.append(character)
+			_character = ''
+			# geting rid of ten ten. 
+			if character in japanese_helpers_data.nigoru_match.keys() : 
+				_character = japanese_helpers_data.nigoru_match[character]
+			else : _character = character
+
+			# other simplification (shi -> chi / yo,ya,yu)
+			if _character in japanese_helpers_data.other_simplification.keys(): 
+				newWord.append(japanese_helpers_data.other_simplification[_character])
+			else : newWord.append(_character)
+
+	# deleting trailing kanas. 
 	if newWord[-1] in japanese_helpers_data.trailing_character : 
 		newWord = newWord[:-1]
 	return ''.join(newWord)

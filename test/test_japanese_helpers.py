@@ -15,7 +15,8 @@ mixed_kanjis_kana = '注目の有料ニュース'
 mixed_kana = 'ベトナムから'
 
 pronciation_core = {
-	'がっこう' : 'かこ',
+	'がっこう'  : 'かこ',
+	'しゅちょう' : 'しゆしよ' 
 }
 
 class Testjapanese_helpers(unittest.TestCase): 
@@ -45,6 +46,7 @@ class Testjapanese_helpers(unittest.TestCase):
 	def test_gen_core_prononciation(self) : 
 		for real_prononciation, core_prononciation in pronciation_core.items() : 
 			self.assertEqual(japanese_helpers.gen_core_prononciation(real_prononciation), core_prononciation)
+
 
 if __name__ == '__main__':
     unittest.main()

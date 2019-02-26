@@ -1,5 +1,11 @@
 accentation_character = {'ぅ', 'っ'}
 trailing_character = {'う'}
+other_simplification = {
+	'ち' : 'し', 
+	'ょ' : 'よ', 
+	'ゃ' : 'や',
+	'ゅ' : 'ゆ',
+}
 
 nigoru_match = {
 	'が' : 'か', 
