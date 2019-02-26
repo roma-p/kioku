@@ -1,58 +1,37 @@
+import database_format_register as r
+
 baseFormat = {
-	'vocab' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'word' : {'type' : 'text'}, 
-		'prononciation' : {'type' : 'text'}, 
-		'simplified_p' : {'type' : 'text'},
-		'meaning' : {'type' : 'text'}, 
-		'exemple' : {'type' : 'text'}, 
-		'categorie' : {'type' : 'text'}, 
-		'tag' : {'type' : 'text'}, 
-		'date' : {'type' : 'text'}
+	'vocab' : {	
+		**r.table_id_index(),
+		'word' : {r.type() : r.type_text()}, 
+		'prononciation' : {r.type() : r.type_text()}, 
+		'simplified_p' : {r.type() : r.type_text()},
+		'meaning' : {r.type() : r.type_text()}, 
+		'exemple' : {r.type() : r.type_text()}, 
+		'categorie' : {r.type() : r.type_text()}, 
+		'tag' : {r.type() : r.type_text()}, 
+		**r.table_date()
 	}, 
 	'categorie' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'name' : {'type' : 'text'}	
+		**r.table_id_index(),
+		'name' : {r.type() : r.type_text()}	
 	},
 	'tag' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'name' : {'type' : 'text'}	
+		**r.table_id_index(),
+		'name' : {r.type() : r.type_text()}	
 	}, 
 	'kanjis' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'name' : {'type' : 'text'}	
+		**r.table_id_index(),
+		'name' : {r.type() : r.type_text()}	
 	},
 	'simplified_p' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'name' : {'type' : 'text'}	
+		**r.table_id_index(),
+		'name' : {r.type() : r.type_text()}	
 	},
 	'word_kanjis' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'word_id' : {'type' : 'INTEGER'}, 
-		'kanjis' : {'type' : 'text'},
+		**r.table_id_index(),
+		'word_id' : {r.type() : r.type_integer()}, 
+		'kanjis' : {r.type() : r.type_text()},
 	},	
 }
+

@@ -3,6 +3,7 @@ import sqlite3
 import functools
 import kioku.configuration as configuration
 import kioku.helpers as helpers
+import kioku.database_format_register as r
 log = logging.getLogger() 
 
 
@@ -231,6 +232,9 @@ class DB_handler(metaclass=Singleton):
 		# TODO  TRY CATCH <<< 
 		for tableName, tableData in self.base_format.items(): 
 			cursor.execute(self._generateDB(tableName, tableData))
+
+		kioku.commit()
+		kioku.close()
 		return True
 
 	
@@ -238,12 +242,15 @@ class DB_handler(metaclass=Singleton):
 
 		command = 'CREATE TABLE IF NOT EXISTS '+tableName+'('
 		for field_name, field_data in tableData.items(): 
-			command+=  field_name + ' ' + field_data['type']
-			if key in field_data.keys() : 
-				command += field_data['key']
-			if constraints in field_data['keys'] : 
-				for constraint in constraints : 
-					command += constraint
+			command+=  field_name + ' ' + field_data[r.type()]+' '
+			if r.key() in field_data.keys() : 
+				command += field_data[r.key()] + ' ' 
+			if r.constraints() in field_data.keys() : 
+				for constraint in field_data[r.constraints()] : 
+					command += constraint+' '
+			command = command[:-1] + ', '
+		command = command[:-2] + ')'
+		print(command)
 		return command 
 
 

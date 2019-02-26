@@ -3,10 +3,12 @@ import unittest, os, gc, logging
 from shutil import copyfile
 from context import kioku
 from kioku.DB_handler import DB_handler
+from kioku import database_format_register as r
 
 empty_db = "test/empty_db/"
 original_db = empty_db + "original.sqlite"
 working_db = empty_db + "working.sqlite"
+gen_db = empty_db+ "gen_db.sqlite"
 
 logging.basicConfig() 
 
@@ -16,28 +18,22 @@ log.setLevel(logging.DEBUG)
 
 base_format = {
 	'vocab' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'word' : {'type' : 'text'}, 
-		'prononciation' : {'type' : 'text'}, 
-		'meaning' : {'type' : 'text'}, 
-		'exemple' : {'type' : 'text'}, 
-		'categorie' : {'type' : 'text'}, 
-		'tag' : {'type' : 'text'}, 
-		'date' : {'type' : 'text'}
+		**r.table_id_index(),
+		'word' : {r.type() : r.type_text()}, 
+		'prononciation' : {r.type() : r.type_text()},
+		'meaning' : {r.type() : r.type_text()}, 
+		'exemple' : {r.type() : r.type_text()}, 
+		'categorie' : {r.type() : r.type_text()}, 
+		'tag' : {r.type() : r.type_text()}, 
+		**r.table_date()
 	}, 
 	'tag' : {
-		'id' : {
-			'type' : 'INTEGER', 
-			'key' : 'PRIMARY KEY', 
-			'constraints' : ['AUTOINCREMENT', 'UNIQUE']
-		},
-		'name' : {'type' : 'text'}	
+		**r.table_id_index(),
+		'name' : {r.type() : r.type_text()}	
 	}
 }
+
+
 
 class Fake_DB_handler(DB_handler):
 	def __init__(self, arg):
@@ -54,7 +50,9 @@ class TestDB_Handler(unittest.TestCase) :
 
 	def tearDown(self):
 		gc.collect()
-		os.remove(working_db)
+		for path in [working_db, gen_db] : 
+			if os.path.exists(path) :
+				os.remove(path)
 
 
 	def test_dbHandler(self):
@@ -100,6 +98,11 @@ class TestDB_Handler(unittest.TestCase) :
 
 		del(db_handler)
 		db_handler = Fake_DB_handler()
+
+	def test_gendb(self) : 
+		db_handler = Fake_DB_handler()
+		db_handler.db_path = gen_db
+		db_handler.generateDB()
 
 
 
