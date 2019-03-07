@@ -216,6 +216,9 @@ class DB_handler(metaclass=Singleton):
 	# generate DB  ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 	def generateDB(self) : 
+
+		self.kiokuDB.close()
+
 		dbName = self.db_path.split('/')[-1]
 		dirPath = self.db_path.split(dbName)[0]
 		if not os.path.exists(dirPath):
@@ -226,15 +229,15 @@ class DB_handler(metaclass=Singleton):
 			return False
 
 		log.info('generating new empty kioku db.')
-		kioku = sqlite3.connect(self.db_path)
-		cursor = kioku.cursor()
+		self.kiokuDB = sqlite3.connect(self.db_path)
+		cursor = self.kiokuDB.cursor()
 
 		# TODO  TRY CATCH <<< 
 		for tableName, tableData in self.base_format.items(): 
 			cursor.execute(self._generateDB(tableName, tableData))
 
-		kioku.commit()
-		kioku.close()
+		self.kiokuDB.commit()
+
 		return True
 
 	
@@ -250,7 +253,6 @@ class DB_handler(metaclass=Singleton):
 					command += constraint+' '
 			command = command[:-1] + ', '
 		command = command[:-2] + ')'
-		print(command)
 		return command 
 
 

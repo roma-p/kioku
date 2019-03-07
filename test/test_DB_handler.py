@@ -15,7 +15,6 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-
 base_format = {
 	'vocab' : {
 		**r.table_id_index(),
@@ -32,8 +31,6 @@ base_format = {
 		'name' : {r.type() : r.type_text()}	
 	}
 }
-
-
 
 class Fake_DB_handler(DB_handler):
 	def __init__(self, arg):
@@ -96,6 +93,12 @@ class TestDB_Handler(unittest.TestCase) :
 		a = db_handler.select('vocab', 'word', tag = 'e_tag')
 		self.assertEqual(a, ())
 
+		lol = [("word_r", "r_cat", "r_tag"),]
+		dataOrder = ('word', 'categorie', 'tag')
+		db_handler.add("vocab", dataOrder, *lol)
+		a = db_handler.select('vocab', 'word', 'categorie', 'tag', tag = 'r_tag')
+		self.assertEqual(set(a), {('word_r', 'r_cat', 'r_tag')})
+
 		del(db_handler)
 		db_handler = Fake_DB_handler()
 
@@ -104,7 +107,12 @@ class TestDB_Handler(unittest.TestCase) :
 		db_handler.db_path = gen_db
 		db_handler.generateDB()
 
-
-
+		self.assertTrue(os.path.exists(gen_db))
+		lol = [("a_cat", "a_tag", "word_1", "hastuon_1", "a_meaning", "a_exemple"),]
+		dataOrder = ('categorie', 'tag', 'word', 'prononciation', 'meaning', 'exemple')
+		db_handler.add("vocab", dataOrder, *lol)
+		a = db_handler.select("vocab", "word", categorie = "a_cat")
+		self.assertEqual(a, (('word_1',),))
+	
 if __name__ == '__main__':
     unittest.main()
