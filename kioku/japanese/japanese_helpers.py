@@ -1,5 +1,5 @@
 import logging
-from kioku import japanese_helpers_data
+from kioku.japanese import japanese_helpers_data
 
 log = logging.getLogger()
 

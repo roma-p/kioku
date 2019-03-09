@@ -6,6 +6,7 @@ import os
 import kioku.configuration as configuration # not useful, copy done in command module
 from kioku.DB_handler import DB_handler
 import kioku.search
+from  kioku import japanese_dataBaseFormat as jFormat
 
 log = logging.getLogger()
 
@@ -91,6 +92,112 @@ def merge_cat_tag(source, dest, _type) :
         return False
 
     
+# /////////////////////// REFACTORING /////////////////////////////////////////
+
+
+def add_vocab_from_csv(fileList) : 
+
+    # data_order : name to id for vocab_data. 
+    data_order, vocab_data = _getVocabFromFileList(fileList)
+    exiting_word = DB_handler.list('vocab', 'word')
+    exiting_tag  = DB_handler.list('tag', 'name')
+    existing_cat = DB_handler.list('categorie', 'name')
+
+    added_vocab = set()
+    added_cat = set()
+    added_tag = set()
+    added_kanjis = set()
+    added_simplified_p = set()
+
+    detected_error = set()
+
+    colName2Id = {} # field name to id in the database. 
+    for i, colName in zip(len(range(len(data_order))), data_order) : 
+        colName2Id[colName] = i 
+
+    for data in vocab_data : 
+        newRow = []
+        
+        
+
+
+    pass
+
+def _getVocabDataFromFile(filePath) : 
+    # return dict for all vocab tables and a tab of order. 
+    # specific of get fromDir
+
+
+    # NON GLOB FQIT DANS COMMNAND. 
+    pass
+
+def _getVocabDataFromDir(dirPath) : 
+
+
+    pass
+
+def _getVocabFromFileList(fileList) :
+
+    #vrai point d'entree
+    word_set = {}
+    vocab_set = {}
+    data_order = jFormat.get_vocab_required_col()
+
+    for file in fileList : 
+        with open(file, 'r') as fout : 
+            readerObj = csv.reader(fout, delimiter = '	')
+            colFormat = _getColFormat(next(readerObj))
+            if not colFormat : 
+                log.error("couldn't figure out format of file : "+file)
+                return None
+            for row in readerObj : 
+                if row[colFormat['word']] not in word_set + [''] :
+                    word_set.append(row[colFormat['word']])
+                    vocab_set.append(tuple(_format_row(row, data_order, col_format))) 
+    return data_order, vocab_set
+
+def _format_row(row, data_order, col_format) : 
+
+    formatted_row = []
+    for col in data_order : 
+        col_id = col_format[col]
+        formatted_row.append(row[col_id])
+    return formatted_row
+
+def _getColFormat(firstRowOfFile) : 
+
+    required_col = jFormat.get_vocab_required_col()
+
+    missingCol = set(required_col) - set(firstRowOfFile)
+    extraCol = set(firstRowOfFile) - set(required_col)
+
+    if len(missingCol) : 
+        log.error('missing rows in file : '+str(missingCol))
+        return None
+    elif len(extraCol) : 
+        log.warning("extra rows on file, won't be processed : "+str(extraCol)) 
+
+    colName2Id = {}
+    for i, colName in zip(range(len(firstRowOfFile)), firstRowOfFile) : 
+        if colName in required_col : 
+            colName2Id[colName] = i
+    return colName2Id
+
+
+def _filterExistingVocab()
+
+    pass
+
+def _addVocabToDatabase()
+
+
+    # gen core pronomciation 
+    # extraire et lister tout les kanjis
+
+
+    pass
+
+
 
 
 

@@ -1,4 +1,4 @@
-from kioku.DB_handler import DB_handler
+from kioku.DB.DB_handler import DB_handler
 from kioku import japanese_dataBaseFormat
 
 class  Japanese_DB_handler(DB_handler):
