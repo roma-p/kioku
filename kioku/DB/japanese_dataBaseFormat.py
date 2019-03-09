@@ -45,35 +45,6 @@ baseFormat = {
 def get_baseFormat() : return baseFormat
 def get_vocab_required_col() : return ('word', 'prononciation', 'tag', 'categorie', 'example', 'meaning')
 
-japaneseFormat = DB_format('japanese_format')
-japanese_format.addTable('vocab', id = True, date = True)
-vocab_data = (
-	('word', r.type_text()),
-	('prononciation', r.type_text()),
-	('simplified_p', r.type_text()),
-	('meaning', r.type_text()),
-	('exemple', r.type_text()),
-	('categorie', r.type_text()),
-	('tag', r.type_text())
-	)
-japanese_format.addFields('vocab', vocab_data) 
-
-japanese_format.addTable('categorie')
-japanese_format.addField('categorie', 'name', r.type_text()) 
-
-japanese_format.addTable('tag')
-japanese_format.addField('tag', 'name', r.type_text()) 
-
-japanese_format.addTable('kanjis')
-japanese_format.addField('kanjis', 'name', r.type_text()) 
-
-japanese_format.addTable('simplified_p')
-japanese_format.addField('simplified_p', 'name', r.type_text()) 
-
-japanese_format.addTable('word_kanjis')
-japanese_format.addField('word_kanjis', 'word_id', r.type_integer()) 
-japanese_format.addField('word_kanjis', 'kanjis', r.type_text()) 
-
 simple_text_field = {r.type() : r.type_text()}
 
 baseFormat_2 = {

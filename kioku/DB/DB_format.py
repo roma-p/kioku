@@ -10,8 +10,13 @@ class DB_format():
 		self._tableList = []
 
 		if dbFormatDict : 
-			s = self._gen_db_format_from_dict(dbFormatDict)
-			if not s : raise ValueError()
+			try : 	
+				s = self._gen_db_format_from_dict(dbFormatDict)
+			except ValueError : 
+				s = False
+			if not s : 
+				raise ValueError()
+
 
 	def list_tables(self): return tuple(self._tableList)
 	def list_tables_names(self) : return tuple([table() for table in self._tableList])
@@ -38,7 +43,7 @@ class DB_format():
 		return True
 
 	# TO DO  either tableName or table Object. 
-	def add_field(self, _table, fieldName, fieldType, key = None, *constraints) : 
+	def add_field(self, _table, fieldName, type, key = None, *constraints) : 
 
 		if isinstance(_table, Table) : table = _table
 		elif isinstance(_table, str) : table = self.get_table(_table)
@@ -48,7 +53,7 @@ class DB_format():
 		if table not in self.list_tables() : 
 			log.error('no table '+tableName+'in db format '+self.dbFormatName)
 			return False
-		s = table.add_field(fieldName, fieldType, key, *constraints)
+		s = table.add_field(fieldName, type, key, *constraints)
 		return s 
 
 	def add_fields(self, tableName, *fieldData) : 
@@ -65,18 +70,20 @@ class DB_format():
 		return global_status
 
 	def _gen_db_format_from_dict(self, dataBaseData) :
+
 		for tableName, tableData in dataBaseData.items() : 
 			fieldNames = [key for key in tableData.keys() if key not in (r.id(), r.date())]
-			if not Field.check_field_as_dict(fieldName, tableData[fieldName]) : 
-				log.error('erros on field description, aborting')
-				return False
+			for fieldName in fieldNames : 
+				if not Field.check_field_as_dict(fieldName, tableData[fieldName]) : 
+					log.error('erros on field description, aborting')
+					return False
 			_id = tableData[r.id()] if r.id() in tableData.keys() else False
 			_date = tableData[r.date()] if r.date() in tableData.keys() else False
 			s = self.add_table(tableName, _id, _date)
 			if not s : return False
-			for field in fieldNames : 
+			for fieldName in fieldNames : 
 				fieldData = tableData[fieldName]
-				s = self.add_field(fieldName, fieldData)
+				s = self.add_field(tableName, fieldName, **fieldData)
 				if not s : return False
 		return True
 
@@ -155,7 +162,7 @@ class Field():
 		s1 = True
 		s2 = True
 		if r.type() not in keys : 
-			log.error('missing '+r.type+' for field : '+fieldName)
+			log.error('missing '+r.type()+' for field : '+fieldName)
 			s1 = False
 		for key in keys : 
 			if key not in r.valid_keys() : 
@@ -197,7 +204,6 @@ def add_attr_to_class(cls, attr, attr_name, attr_doc_strings = None) :
 	if attr_doc_strings : 
 		attr.__doc__  = attr_doc_strings
 	setattr(cls, attr_name, attr)
-
 
 def add_attr_to_instance(self, attr, attr_name, attr_doc_strings = None) : 
 	attr.__name__ = attr_name 
