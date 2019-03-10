@@ -2,8 +2,8 @@
 import unittest, os, gc, logging
 from shutil import copyfile
 from context import kioku
-from kioku.DB_handler import DB_handler
-from kioku import database_format_register as r
+from kioku.DB.DB_handler import DB_handler
+from kioku.DB import database_format_register as r
 
 empty_db = "test/empty_db/"
 original_db = empty_db + "original.sqlite"
@@ -15,27 +15,27 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
+simple_text_field = {r.type() : r.type_text()}
 base_format = {
 	'vocab' : {
-		**r.table_id_index(),
-		'word' : {r.type() : r.type_text()}, 
-		'prononciation' : {r.type() : r.type_text()},
-		'meaning' : {r.type() : r.type_text()}, 
-		'exemple' : {r.type() : r.type_text()}, 
-		'categorie' : {r.type() : r.type_text()}, 
-		'tag' : {r.type() : r.type_text()}, 
-		**r.table_date()
+		r.id() : True,
+		r.date() : True,
+		'word' : simple_text_field, 
+		'prononciation' : simple_text_field,
+		'meaning' : simple_text_field, 
+		'exemple' : simple_text_field, 
+		'categorie' : simple_text_field, 
+		'tag' : simple_text_field, 
 	}, 
 	'tag' : {
-		**r.table_id_index(),
-		'name' : {r.type() : r.type_text()}	
+		r.id() : True,
+		'name' : simple_text_field	
 	}
 }
 
 class Fake_DB_handler(DB_handler):
 	def __init__(self, arg):
 		super().__init__(arg)
-		self.base_format = base_format
 	
 
 class TestDB_Handler(unittest.TestCase) :
@@ -53,8 +53,8 @@ class TestDB_Handler(unittest.TestCase) :
 
 
 	def test_dbHandler(self):
-		db_handler_a = Fake_DB_handler(working_db)
-		db_handler = Fake_DB_handler()
+		db_handler_a = DB_handler(working_db, base_format)
+		db_handler = DB_handler()
 
 		# checking singleton. 
 		self.assertEqual(id(db_handler), id(db_handler_a))
@@ -99,11 +99,16 @@ class TestDB_Handler(unittest.TestCase) :
 		a = db_handler.select('vocab', 'word', 'categorie', 'tag', tag = 'r_tag')
 		self.assertEqual(set(a), {('word_r', 'r_cat', 'r_tag')})
 
+		f = db_handler.base_format
+		conditions = {f.vocab.tag() : 'r_tag'}
+		a = db_handler.select(f.vocab, f.vocab.word, f.vocab.categorie, f.vocab.tag, **conditions)
+		self.assertEqual(set(a), {('word_r', 'r_cat', 'r_tag')})
+
 		del(db_handler)
-		db_handler = Fake_DB_handler()
+		db_handler = DB_handler()
 
 	def test_gendb(self) : 
-		db_handler = Fake_DB_handler()
+		db_handler = DB_handler(base_format = base_format)
 		db_handler.db_path = gen_db
 		db_handler.generateDB()
 
@@ -113,6 +118,8 @@ class TestDB_Handler(unittest.TestCase) :
 		db_handler.add("vocab", dataOrder, *lol)
 		a = db_handler.select("vocab", "word", categorie = "a_cat")
 		self.assertEqual(a, (('word_1',),))
-	
+
+
+
 if __name__ == '__main__':
     unittest.main()

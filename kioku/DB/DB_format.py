@@ -21,6 +21,11 @@ class DB_format():
 	def list_tables(self): return tuple(self._tableList)
 	def list_tables_names(self) : return tuple([table() for table in self._tableList])
 
+	def list_field_names(self, tableName) :
+		table = self.get_table(tableName)
+		if not table : return None
+		else : return table.list_field_names() 
+
 	def get_table(self, tableName) : 
 		table_match_list = [table for table in self._tableList if table() == tableName]
 		len_list = len(table_match_list)
