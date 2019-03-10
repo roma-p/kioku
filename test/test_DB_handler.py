@@ -46,6 +46,8 @@ class TestDB_Handler(unittest.TestCase) :
 
 
 	def tearDown(self):
+		db_handler = DB_handler()
+		del(db_handler)
 		gc.collect()
 		for path in [working_db, gen_db] : 
 			if os.path.exists(path) :
@@ -108,8 +110,10 @@ class TestDB_Handler(unittest.TestCase) :
 		db_handler = DB_handler()
 
 	def test_gendb(self) : 
-		db_handler = DB_handler(base_format = base_format)
+		db_handler = DB_handler(gen_db, base_format)
+		print('TO CORRECT : ')
 		db_handler.db_path = gen_db
+
 		db_handler.generateDB()
 
 		self.assertTrue(os.path.exists(gen_db))

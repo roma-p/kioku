@@ -1,7 +1,6 @@
 import os, datetime, logging, configparser
 import sqlite3
 import functools
-import kioku.configuration as configuration
 import kioku.helpers as helpers
 import kioku.DB.database_format_register as r
 from kioku.DB.DB_format import DB_format
@@ -20,16 +19,11 @@ class Singleton(type) :
 class DB_handler(metaclass=Singleton):
 		
 
-	def __init__(self, db_path = '', base_format = None):
+	def __init__(self, db_path, base_format):
 	 
 	 	# TO DO : le get configuration dans la classe herite DB.
-		if not db_path : 
-			config_data = configuration.getConfiguration()		
-			if not config_data : return None 
-			db_path = config_data.get('kioku', 'db_path')
 		if not os.path.exists(db_path):
-			log.critical("DB not found on "+db_path)
-			return None
+			log.warning("DB not found on "+db_path)
 		try : 
 			self.base_format = DB_format('format', **base_format)
 		except ValueError: 
@@ -138,19 +132,6 @@ class DB_handler(metaclass=Singleton):
 		self.kiokuDB.commit()
 
 
-	# getter ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-	# TO DELETE
-	def __list_tables(self) : 
-		return self.base_format.keys()
-
-	def __list_rows(self, tableName) : 
-		if tableName not in self.base_format.keys() : 
-			log.error('no table "'+tableName+'" found.')
-			return None
-		else : 
-			return self.base_format[tableName].keys()
-
 	# checkers ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 	def _check_select(self, tableName, *itemToGet, **conditions):
@@ -207,7 +188,6 @@ class DB_handler(metaclass=Singleton):
 				str_data.append(str(pottential_single_tuple))
 
 		sqlrequest = "INSERT INTO "+table+str_data[0]+" VALUES "+str_data[1]
-		print(sqlrequest)
 		return sqlrequest
 
 
