@@ -17,6 +17,9 @@ class DB_format():
 			if not s : 
 				raise ValueError()
 
+		# TODO : SHALL UPDATES ITSLEF UPON MODIDIFACTION USING METHODS. 
+		# OR just have a version row. 
+		self._dbFormatDict = dbFormatDict
 
 	def list_tables(self): return tuple(self._tableList)
 	def list_tables_names(self) : return tuple([table() for table in self._tableList])
