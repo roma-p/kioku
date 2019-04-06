@@ -118,17 +118,21 @@ class Query() :
 
     def join_left(self, table_B, field_A, field_B) :
         table_B, field_A, field_B = _formatData(table_B, field_A, field_B) 
-        field_A, field_B = _format_value_from_type(field_A, field_B)
         if not self._add_shall_exist_field_from_last_table(field_A) : 
             return None
         self._shall_exist[table_B].append(field_B)
         table_A = self._lastTableName
         str_query = 'LEFT JOIN ' + table_B + ' ON ' + table_A + '.' + field_A + ' = ' +  table_B + '.' + field_B
+        self._shall_exist = {}
+        self._lastTableName = None
         self._sectionList.append(str_query)
         return self
 
     def _add_shall_exist_field_from_last_table(self, field) : 
-        if not self._lastTableName :
+        if self._lastTableName == None : 
+            log.warning("query won't be able to check base consistency")
+            return True
+        elif not len(self._lastTableName) :
             log.error('error in formatting your query...')
             return False
         self._shall_exist[self._lastTableName].append(field)
@@ -149,7 +153,6 @@ def _format_value_from_type(*valueList) :
     updated_values = []
     status = True
     for value in valueList :
-
         if isinstance(value, int): 
             value = str(value)
             updated_values.append(value)
@@ -162,7 +165,6 @@ def _format_value_from_type(*valueList) :
     if status : return updated_values
     else : return None
     
-
 
 def _str_select(selectType, tableName, itemToGet) : 
     selector = ''

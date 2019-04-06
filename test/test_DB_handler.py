@@ -12,8 +12,7 @@ working_db = empty_db + "working.sqlite"
 gen_db = empty_db + "gen_db.sqlite"
 query_db = empty_db + "query_db.sqlite"
 
-logging.basicConfig() 
-
+logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
@@ -164,14 +163,27 @@ class TestDB_Handler(unittest.TestCase) :
         q.where().equal(db_f.vocab.tag, 'a_tag')
         q.or_().equal(db_f.vocab.categorie, 'a_cat')
 
-        data = db_handler.execute(q)
+        data = db_handler.executeQuery(q)
         self.assertEqual(data, (('word_1', 'hastuon_1'), ('word_2', 'hastuon_2')))
 
-        # q = Query().select(db_f.vocab, db_f.vocab.word)
-        # q.join_left(db_f.word_kanjis, db_f.vocab.id, db_f.word_kanjis.word_id)
-        # q.where().not_equal(db_f.vocab.)
+        q = Query().select(db_f.vocab, db_f.vocab.word)
+        q.join_left(db_f.word_kanjis, db_f.vocab.id, db_f.word_kanjis.word_id)
+        q.where().not_equal(db_f.word_kanjis.kanjis, 'kanjis_2')
 
+        q = Query().select(db_f.word_kanjis, db_f.vocab.word)
+        q.join_left(db_f.vocab, db_f.word_kanjis.word_id , db_f.vocab.id)
+        q.where().equal(db_f.word_kanjis.kanjis, 'kanjis_2')
 
+        data = db_handler.executeQuery(q)
+        self.assertEqual(data, (('word_1',), ('word_2',)))      
+
+        q = Query().select(db_f.word_kanjis, db_f.vocab.word)
+        q.join_left(db_f.vocab, db_f.word_kanjis.word_id , db_f.vocab.id)
+        q.where().equal(db_f.word_kanjis.kanjis, 'kanjis_4')
+
+        data = db_handler.executeQuery(q)
+        self.assertEqual(data, (('word_3',),))      
+        
         del(db_handler)
 
 if __name__ == '__main__':

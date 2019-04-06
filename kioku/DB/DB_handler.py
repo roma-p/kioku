@@ -133,7 +133,7 @@ class DB_handler(metaclass=Singleton):
         self._req_update(table, updated_field, updated_value, **conditions)
         self.kiokuDB.commit()
 
-    def execute(self, queryObject) : 
+    def executeQuery(self, queryObject) : 
         if not self._check_query_object(queryObject) : 
             return None
         return self._req_execute_query(queryObject)
