@@ -11,6 +11,7 @@ def type_list() : return (type_text(), type_integer())
 
 def key() : return 'key'
 def key_primary() : return 'PRIMARY KEY'
+def key_foreign() : return 'FOREIGN KEY'
 
 # To do with decorators ....
 def key_list() : return (key_primary())

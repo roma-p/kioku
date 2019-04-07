@@ -21,13 +21,10 @@ class TestQuery(unittest.TestCase) :
         self.assertEqual(q(), q_exepcted)
         self.assertTrue( _checkDBFormat(q.get_shall_exit_tables_fields(), check_expected))
 
-        print(q.get_shall_exit_tables_fields()
-            )
 
         q2 = Query().select('table1', 'field1')
         q2.join_left('table2', 'id1', 'id2')
         q2.where().is_null('field2')
-        print(q2())
 #       TODO probably false ....
 #       TODO : change defautl type of Query shqll exist stuff from list to set.          
 #        self.assertEqual(q(), q_exepcted)
