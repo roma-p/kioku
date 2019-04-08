@@ -32,6 +32,7 @@ class DB_handler(metaclass=Singleton):
             log.warning("DB not found on "+db_path)
         else : 
             self.kiokuDB = sqlite3.connect(db_path)
+            self.enable_foreign_keys()
         try : 
             self.base_format = DB_format('format', **base_format)
         except ValueError: 
@@ -46,6 +47,13 @@ class DB_handler(metaclass=Singleton):
             del(self.kiokuDB)
 
     # Public method ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
+
+    def enable_foreign_keys(self) : 
+        command = 'PRAGMA foreign_keys=ON;'
+        cursor = self.kiokuDB.cursor()
+        cursor.execute(command) 
+        r =  cursor.fetchall()
+        self.kiokuDB.commit()   
 
     # TODO : SUPPORT INNER JOINT... Select with where statement
     # select with INNER JOIN / LEFT JOIN STATEMENT. 
@@ -272,7 +280,7 @@ class DB_handler(metaclass=Singleton):
         # TODO  TRY CATCH <<< 
         for table in self.base_format.list_tables(): 
             cursor.execute(self._generateDB(table))
-
+        self.enable_foreign_keys()
         self.kiokuDB.commit()
 
         return True
@@ -289,7 +297,13 @@ class DB_handler(metaclass=Singleton):
                 for constraint in field.constraints : 
                     command += constraint+' '
             command = command[:-1] + ', '
+
+        #TODO TEST U. 
+        for key in table.list_foreign_keys() : 
+            command += r.key_foreign() +' ('+key.child_field+')' + ' REFERENCES '+ key.parent_table+'('+key.parent_field+'), ' 
+            print(command)
         command = command[:-2] + ')'
+
         return command 
 
 # *****************************************************************************
