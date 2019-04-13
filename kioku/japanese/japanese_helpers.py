@@ -51,6 +51,7 @@ def gen_core_prononciation(word) :
 	word = convertKanaToHiragana(word)
 	if not word : 
 		log.error("could't generate core prononciation of "+word)
+		return None
 	newWord = []
 	for character in word : 
 		# deleting accentuation 
