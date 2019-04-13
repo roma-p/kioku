@@ -70,7 +70,7 @@ class DB_handler(metaclass=Singleton):
             return
         return data
 
-    def list(table, fieldToGet, **conditions) :
+    def list(self, table, fieldToGet, **conditions) :
         _tmp, conditions = _formatData(table, fieldToGet, **conditions)
         table, fieldToGet = _tmp
         data = self.select(table, fieldToGet, **conditions)
@@ -196,7 +196,10 @@ class DB_handler(metaclass=Singleton):
             result = func(self, tableName, *args, **kwargs)
             if result == None:return
             cursor = self.kiokuDB.cursor()
-            cursor.execute(result)
+            try : 
+                cursor.execute(result)
+            except sqlite3.IntegrityError:
+                log.error('foreign key error') 
             r =  cursor.fetchall()
             return tuple(r)
         return executing_R

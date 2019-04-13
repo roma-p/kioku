@@ -26,3 +26,5 @@ def id() : return 'id'
 def date() : return 'date'
 
 def valid_keys() : return (type(), key(), constraints())
+
+def version() : return 'version'

@@ -7,6 +7,7 @@ class DB_format():
     def __init__(self, dbFormatName, **dbFormatDict):
         
         self.dbFormatName = dbFormatName
+        self._version = 0
         self._tableList = [] 
         # list of tubple  (<table name>, <table field>) that shall exist for foreign keys to be relevant
         # usedto check overall consistency, when constructing data format using dictionnary
@@ -24,6 +25,9 @@ class DB_format():
         # TODO : SHALL UPDATES ITSLEF UPON MODIDIFACTION USING METHODS. 
         # OR just have a version row. 
         self._dbFormatDict = dbFormatDict
+
+    @property
+    def version(self) : return self._version
 
     def list_tables(self): return tuple(self._tableList)
     def list_tables_names(self) : return tuple([table() for table in self._tableList])
@@ -110,23 +114,28 @@ class DB_format():
     def _gen_db_format_from_dict(self, dataBaseData) :
 
         for tableName, tableData in dataBaseData.items() :
-            fieldNames = [key for key in tableData.keys() if key not in (r.id(), r.date(), r.key_foreign())]
-            for fieldName in fieldNames : 
-                if not Field.check_field_as_dict(fieldName, tableData[fieldName]) : 
-                    log.error('erros on field description, aborting')
-                    return False
-            _id = tableData[r.id()] if r.id() in tableData.keys() else False
-            _date = tableData[r.date()] if r.date() in tableData.keys() else False
-            s = self.add_table(tableName, _id, _date)
-            if not s : return False
-            for fieldName in fieldNames : 
-                fieldData = tableData[fieldName]
-                s = self.add_field(tableName, fieldName, **fieldData)
+            if tableName ==  r.version() :
+                self._version = tableData
+            else :  
+                fieldNames = [key for key in tableData.keys() if key not in (r.id(), r.date(), r.key_foreign())]
+                for fieldName in fieldNames : 
+                    if not Field.check_field_as_dict(fieldName, tableData[fieldName]) : 
+                        log.error('errors on field description, aborting')
+                        return False
+                _id = tableData[r.id()] if r.id() in tableData.keys() else False
+                _date = tableData[r.date()] if r.date() in tableData.keys() else False
+                s = self.add_table(tableName, _id, _date)
                 if not s : return False
-            if r.key_foreign() in tableData.keys() : 
-                for child_field, (parent_table, parent_field) in tableData[r.key_foreign()].items() : 
-                    s = self.add_foreign_key(tableName, child_field, parent_table, parent_field)
+                for fieldName in fieldNames : 
+                    fieldData = tableData[fieldName]
+                    key = fieldData[r.key()] if r.key() in fieldData.keys() else None
+                    constraints = fieldData[r.constraints()] if r.constraints() in fieldData.keys() else []
+                    s = self.add_field(tableName, fieldName, key, constraints)
                     if not s : return False
+                if r.key_foreign() in tableData.keys() : 
+                    for child_field, (parent_table, parent_field) in tableData[r.key_foreign()].items() : 
+                        s = self.add_foreign_key(tableName, child_field, parent_table, parent_field)
+                        if not s : return False
         status = self._check_shall_exist()
         return status
 
