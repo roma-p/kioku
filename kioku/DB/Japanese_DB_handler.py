@@ -1,8 +1,12 @@
+import logging
 from kioku.DB.DB_handler import DB_handler
-from kioku import japanese_dataBaseFormat
+from kioku.DB import japanese_dataBaseFormat
 import kioku.configuration as configuration
 from kioku.DB.Query import Query
 from kioku.japanese import japanese_helpers
+
+
+log = logging.getLogger()
 
 class  Japanese_DB_handler(DB_handler):
 
@@ -27,43 +31,44 @@ class  Japanese_DB_handler(DB_handler):
     def add_categories(self, *categorie_list) : 
         table = self.base_format.categories
         field = self.base_format.categories.name
-        self._add_to_db_index(table, field)
+        self._add_to_db_index(table, field, categorie_list)
 
     def add_tags(self, *tag_list) :
         table = self.base_format.tags
         field = self.base_format.tags.name
-        self._add_to_db_index(table, field)
+        self._add_to_db_index(table, field, tag_list)
 
     def add_kanjis(self, *kanjis_list) :
         table = self.base_format.kanjis
         field = self.base_format.kanjis.name
-        self._add_to_db_index(table, field)
+        self._add_to_db_index(table, field, kanjis_list)
 
-    def _add_to_db_index(self, table, field, *list_of_index_entries):
+    def _add_to_db_index(self, table, field, list_of_index_entries):
 
         data_order = (field,)
-        formatted_data = [(entry,) for entry in list_of_index_entries]
+        formatted_data = [(entry,) for entry in set(list_of_index_entries)]
 
-        existing_list = self.list(table, field)
+        existing_list = self.select(table, field)
         duplicate_set = set(existing_list) & set(formatted_data)
         valid_set = set(formatted_data) - set(existing_list)
 
-        if duplicate_list : 
-            log.warning('following data already exists in table: ' + field() + '.')
-            for data in duplicate_list : 
-                log.warning(data + ' already exists.') 
-
+        if duplicate_set : 
+            log.warning('following data already exists in table/field : ' +table()+ '/'+ field() + ' and will not be added.')
+            for data in duplicate_set: 
+                log.warning(data[0] + ' already exists.') 
         self.add(table, data_order, *tuple(valid_set))
 
     # data expected : 
-    # ('word', 'prononciation', 'meaning','example','categorie','tag')
+    # ('word', 'prononciation', 'meaning','categorie','tag', 'example')
     def add_vocab(self, *vocab_list) :
         data_order = ('word', 'prononciation', 'core_prononciation',
             'meaning','example','categorie','tag')
 
         # 1) listing existing categorie, tag to ensure foreign key constraints * 
         existing_cat_tuple = self.list(self.base_format.categories, self.base_format.categories.name)
-        existing_tag_tuple self.list(self.base_format.tags, self.base_format.tags.name)
+        existing_tag_tuple = self.list(self.base_format.tags, self.base_format.tags.name)
+
+        # TODO NOT CHECKING UNICITY / NOT NULL ? 
 
         # 2) rejecting empty mendatory fields, checking foreign key constraints 
         #    else : listing kanjis and generating core pronomciation.
@@ -73,18 +78,18 @@ class  Japanese_DB_handler(DB_handler):
         kanjis_detected_set = set()
         core_p_detected_set = set()
         for vocab in vocab_list : 
-            word, prononciation, meaning, example, categorie, tag = vocab
+            word, prononciation, meaning, categorie, tag, example = vocab
             valid = True
             # 1 : first : checking validity of single data. 
             for single_data in word, meaning : 
                 if not single_data : 
                     log.error('missing word / meaning detected.')
                     valid = False
-            if cat not in existing_cat_tuple : 
-                log.error("can't add "+ word + ", categorie " + cat + " does not exists.")
+            if categorie and categorie not in existing_cat_tuple : 
+                log.error("can't add "+ word + ", categorie " + categorie + " does not exists.")
                 error_list.append(vocab)
                 valid = False
-            if tag not in existing_tag_tuple : 
+            if tag and tag not in existing_tag_tuple : 
                 log.error("can't add "+ word + ", tags " + tag + " does not exists.")
                 error_list.append(vocab)
                 valid = False
@@ -92,8 +97,16 @@ class  Japanese_DB_handler(DB_handler):
             if valid :
 
                 # generating core prononciation
-                if not prononciation : hiragana_word = word 
-                else : hiragana_word = prononciation
+                # if not prononciation : hiragana_word = word 
+                # else : hiragana_word = prononciation
+                hiragana_word = word if not prononciation else prononciation # TODO word?
+
+                # DEBUG 
+                if not hiragana_word : 
+                    print('hiragana_word null')
+                    print(word)
+                    print(prononciation)
+
                 hiragana_word = japanese_helpers.convertKanaToHiragana(hiragana_word)
                 core_prononciation = japanese_helpers.gen_core_prononciation(hiragana_word)
                 core_p_detected_set.add(core_prononciation)
@@ -102,7 +115,7 @@ class  Japanese_DB_handler(DB_handler):
                 kanjis_tuple = japanese_helpers.list_kanjis(word)
                 kanjis_detected_set.update(set(kanjis_tuple))
 
-                vocab_tmp_entry = (word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_list)
+                vocab_tmp_entry = (word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_tuple)
                 vocab_tmp_entries_list.append(vocab_tmp_entry)
 
         if error_list : 
@@ -115,10 +128,10 @@ class  Japanese_DB_handler(DB_handler):
         existing_kanjis_set = set(self.list(self.base_format.kanjis, self.base_format.kanjis.name))
         existing_core_p_set = set(self.list(self.base_format.core_prononciations, self.base_format.core_prononciations.name))
 
-        kanjis_to_add_tuple = tuple(kanjis_detected - existing_kanjis_set)
+        kanjis_to_add_tuple = tuple(kanjis_detected_set - existing_kanjis_set)
         existing_core_p_set = tuple(existing_core_p_set - existing_core_p_set)
 
-        # TODO : status ????
+        # CRASH ICI. 
 
         self.add(self.base_format.kanjis, (self.base_format.kanjis.name,), kanjis_to_add_tuple)
         self.add(self.base_format.core_prononciations , (self.base_format.core_prononciations.name,), existing_core_p_set)
@@ -166,7 +179,5 @@ class  Japanese_DB_handler(DB_handler):
         item_to_get = [tableObject.name, tableObject.id]
         data_as_dict = {id : name for (id, name) in self.select(tableObject, item_to_get)}
         return data_as_dict
-
-    def core_prononciation(self, *core_prononciation_list) : pass
 
     

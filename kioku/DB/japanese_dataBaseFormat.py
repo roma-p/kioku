@@ -1,15 +1,30 @@
-import database_format_register as r
-import DB_format
+# import database_format_register as r
+# import DB_format
+
+from kioku.DB import database_format_register as r
+from kioku.DB.DB_format import DB_format
 
 
 def get_baseFormat() : return baseFormat
 def get_vocab_required_col() : return ('word', 'prononciation', 'tag', 'categorie', 'example', 'meaning')
 
 simple_int_field = {r.type() : r.type_integer()}
+not_null_int_field = {
+	r.type() : r.type_integer(),
+	r.constraints() : (r.constraints_not_null(),)
+	}
 simple_text_field = {r.type() : r.type_text()}
 unique_text_field = {
 	r.type() : r.type_text(), 
 	r.constraints() : (r.constraints_unique(),)
+	}
+unique_not_null_text_field = {
+	r.type() : r.type_text(), 
+	r.constraints() : (r.constraints_unique(), r.constraints_not_null())
+	}
+not_null_text_field = {
+	r.type() : r.type_text(), 
+	r.constraints() : (r.constraints_not_null(),)
 	}
 
 # add not null constraints. 
@@ -17,12 +32,12 @@ baseFormat = {
 	'vocab' : {	
 		r.id() : True,
 		r.date() : True,
-		'word' : unique_text_field, 
+		'word' : unique_not_null_text_field, 
 		'prononciation' : simple_text_field, 
 		'core_prononciation' : simple_int_field,
-		'meaning' : simple_text_field, 
+		'meaning' : not_null_text_field, 
 		'exemple' : simple_text_field, 
-		'categorie' : simple_int_field, 
+		'categorie' : not_null_int_field, 
 		'tag' : simple_int_field, 
 		r.key_foreign() : {
 		    'tag' : ('tags', 'id'),
@@ -31,24 +46,24 @@ baseFormat = {
 	}, 
 	'categories' : {
 		r.id() : True,
-		'name' : unique_text_field	
+		'name' : unique_not_null_text_field	
 	},
 	'tags' : {
 		r.id() : True,
-		'name' : unique_text_field	
+		'name' : unique_not_null_text_field	
 	}, 
 	'kanjis' : {
 		r.id() : True,
-		'name' : unique_text_field	
+		'name' : unique_not_null_text_field	
 	},
 	'core_prononciations' : {
 		r.id() : True,
-		'name' : unique_text_field	
+		'name' : unique_not_null_text_field	
 	},
 	'word_kanjis' : {
 		r.id() : True,
-		'word_id' : {r.type() : r.type_integer()}, 
-		'kanjis_id' : {r.type() : r.type_integer()},
+		'word_id' : not_null_int_field, 
+		'kanjis_id' : not_null_int_field,
 	},
 	'version' : 1.0
 }

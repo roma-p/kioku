@@ -199,7 +199,7 @@ class DB_handler(metaclass=Singleton):
             try : 
                 cursor.execute(result)
             except sqlite3.IntegrityError:
-                log.error('foreign key error') 
+                log.error('integrity error in database.') 
             r =  cursor.fetchall()
             return tuple(r)
         return executing_R
@@ -304,7 +304,6 @@ class DB_handler(metaclass=Singleton):
         #TODO TEST U. 
         for key in table.list_foreign_keys() : 
             command += r.key_foreign() +' ('+key.child_field+')' + ' REFERENCES '+ key.parent_table+'('+key.parent_field+'), ' 
-            print(command)
         command = command[:-2] + ')'
 
         return command 
