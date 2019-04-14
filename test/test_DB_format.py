@@ -7,13 +7,16 @@ log = logging.getLogger()
 
 simple_text_field = {r.type() : r.type_text()}
 simple_int_field = {r.type() : r.type_integer()}
-
+unique_not_null_text = {
+    r.type() : r.type_text(), 
+    r.constraints() : (r.constraints_unique(), r.constraints_not_null())
+    }
 
 db_format_correct = {
     'vocab' : { 
         r.id() : True,
         r.date() : True,
-        'word' : simple_text_field, 
+        'word' : unique_not_null_text, 
         'prononciation' : simple_text_field, 
         'simplified_p' : simple_text_field,
         'meaning' : simple_text_field, 
@@ -23,11 +26,11 @@ db_format_correct = {
     }, 
     'categorie' : {
         r.id() : True,
-        'name' : simple_text_field  
+        'name' : unique_not_null_text  
     },
     'tag' : {
         r.id() : True,
-        'name' : simple_text_field  
+        'name' : unique_not_null_text  
     }
 }
 
@@ -137,6 +140,10 @@ class TestDB_format(unittest.TestCase) :
 
         self.assertEqual(db_format.categorie.name.fieldType, r.type_text())
         self.assertEqual(db_format.vocab.tag.fieldType, r.type_text())
+
+        expected_constraints = {r.constraints_unique(), r.constraints_not_null()}
+        self.assertEqual(set(db_format.vocab.word.constraints) , expected_constraints)
+
 
     def test_DB_format_from_dict_error(self) : 
         for wrong_input in (db_format_wrong_1, db_format_wrong_2) : 

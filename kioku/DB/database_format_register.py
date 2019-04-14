@@ -19,8 +19,9 @@ def key_list() : return (key_primary())
 def constraints() : return 'constraints'
 def constraints_autoincrement() : return 'AUTOINCREMENT'
 def constraints_unique() : return 'UNIQUE'
+def constraints_not_null() : return 'NOT NULL'
 
-def constraints_list() : return (constraints_autoincrement(), constraints_unique())
+def constraints_list() : return (constraints_autoincrement(), constraints_unique(), constraints_not_null())
 
 def id() : return 'id'
 def date() : return 'date'

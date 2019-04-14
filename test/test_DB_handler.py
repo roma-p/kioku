@@ -97,8 +97,8 @@ class TestDB_Handler(unittest.TestCase) :
 
     def tearDown(self):
         gc.collect()
-        # for path in [working_db, gen_db, query_db] : 
-        for path in [working_db, query_db] : 
+        for path in [working_db, gen_db, query_db] : 
+        # for path in [working_db, query_db] : 
             if os.path.exists(path) :
                 os.remove(path)
 

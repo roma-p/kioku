@@ -125,17 +125,24 @@ class DB_format():
                 _id = tableData[r.id()] if r.id() in tableData.keys() else False
                 _date = tableData[r.date()] if r.date() in tableData.keys() else False
                 s = self.add_table(tableName, _id, _date)
-                if not s : return False
+                if not s : 
+                    log.error('error creating table '+tableName)
+                    return False
                 for fieldName in fieldNames : 
                     fieldData = tableData[fieldName]
+                    _type = fieldData[r.type()]
                     key = fieldData[r.key()] if r.key() in fieldData.keys() else None
-                    constraints = fieldData[r.constraints()] if r.constraints() in fieldData.keys() else []
-                    s = self.add_field(tableName, fieldName, key, constraints)
-                    if not s : return False
+                    constraints = fieldData[r.constraints()] if r.constraints() in fieldData.keys() else ()
+                    s = self.add_field(tableName, fieldName, _type, key, *constraints)
+                    if not s : 
+                        log.error('error creating field '+ fieldName+' in table '+tableName)
+                        return False
                 if r.key_foreign() in tableData.keys() : 
                     for child_field, (parent_table, parent_field) in tableData[r.key_foreign()].items() : 
                         s = self.add_foreign_key(tableName, child_field, parent_table, parent_field)
-                        if not s : return False
+                        if not s : 
+                            log.error('error creating foreign keys  constraints on table '+tableName)
+                            return False
         status = self._check_shall_exist()
         return status
 
@@ -195,7 +202,6 @@ class Table():
     def list_field(self) : return tuple(self._fieldList)
     def list_field_names(self) : return tuple([field() for field in self._fieldList])
     def list_foreign_keys(self) : return tuple(self._foreignKeyList)
-
 
 class Field(): 
 
