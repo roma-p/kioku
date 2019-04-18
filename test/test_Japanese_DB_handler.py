@@ -64,6 +64,7 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         jpDB.add_tags('tag_1')
 
         tag_set = {'tag_1', 'tag_2', 'tag_3'}
+        tag_in_DB = jpDB.list(jpDB.base_format.tags , jpDB.base_format.tags.name)
         self.assertEqual(set(tag_in_DB), tag_set)
 
         jpDB.add_kanjis('kanji_1', 'kanji_2', 'kanji_2')
@@ -72,16 +73,54 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         self.assertEqual(set(kanjis_in_DB), kanjis_set)
 
 
-        print('pppppppp')
-
     def test_add_vocab(self) : 
         jpDB = Japanese_DB_handler() 
         jpDB.add_categories(*cat_list)
         jpDB.add_tags(*tag_list)
-        print('pppppppppp')
         jpDB.add_vocab(*japanese_vocab)
 
+        word_to_test = '持ってくる'
+        categorie_to_test = 'bring'
+        tag_to_test = 'composed'
+        prononciation_to_test = 'もってくる'
+        kanjis_to_test = '持'
 
+        vocab_item_to_get = (
+            jpDB.base_format.vocab.id,
+            jpDB.base_format.vocab.categorie, 
+            jpDB.base_format.vocab.tag 
+            )
+        condition = {jpDB.base_format.vocab.word() : word_to_test}
+        word_id, categorie_id, tag_id = jpDB.select(
+            jpDB.base_format.vocab, 
+            *vocab_item_to_get, 
+            **condition)[0]
 
+        categorie = jpDB.select(
+            jpDB.base_format.categories, 
+            jpDB.base_format.categories.name,
+            id = categorie_id)[0][0]
+
+        tag = jpDB.select(
+            jpDB.base_format.tags, 
+            jpDB.base_format.tags.name,
+            id = tag_id)[0][0]
+
+        self.assertEqual(categorie, categorie_to_test)
+        self.assertEqual(tag, tag_to_test)
+
+        kanji_id_to_test = jpDB.select(
+            jpDB.base_format.kanjis, 
+            jpDB.base_format.kanjis.id,
+            name = kanjis_to_test)[0][0]
+
+        kanji_id = jpDB.select(
+            jpDB.base_format.word_kanjis, 
+            jpDB.base_format.word_kanjis.kanjis_id,
+            word_id = word_id)[0][0]
+
+        self.assertEqual(kanji_id_to_test, kanji_id)
 
 if __name__ == '__main__': unittest.main()
+
+

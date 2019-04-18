@@ -157,16 +157,16 @@ class TestDB_Handler(unittest.TestCase) :
         self.assertEqual(set(a), {('word_r', 'r_cat', 'r_tag')})
         del(db_handler)
 
-    # def test_gendb(self) : 
-    #    db_handler = DB_handler(gen_db, base_format)
-    #    db_handler.generateDB() 
-    #    self.assertTrue(os.path.exists(gen_db))
-    #    lol = [("a_cat", "a_tag", "word_1", "hastuon_1", "a_meaning", "a_exemple"),]
-    #    dataOrder = ('categorie', 'tag', 'word', 'prononciation', 'meaning', 'exemple')
-    #    db_handler.add("vocab", dataOrder, *lol)
-    #    a = db_handler.select("vocab", "word", categorie = "a_cat")
-    #    self.assertEqual(a, (('word_1',),))
-    #    del(db_handler)
+    def test_gendb(self) : 
+       db_handler = DB_handler(gen_db, base_format)
+       db_handler.generateDB() 
+       self.assertTrue(os.path.exists(gen_db))
+       lol = [("a_cat", "a_tag", "word_1", "hastuon_1", "a_meaning", "a_exemple"),]
+       dataOrder = ('categorie', 'tag', 'word', 'prononciation', 'meaning', 'exemple')
+       db_handler.add("vocab", dataOrder, *lol)
+       a = db_handler.select("vocab", "word", categorie = "a_cat")
+       self.assertEqual(a, (('word_1',),))
+       del(db_handler)
 
 
     def test_gendb_fkey(self) : 

@@ -198,8 +198,10 @@ class DB_handler(metaclass=Singleton):
             cursor = self.kiokuDB.cursor()
             try : 
                 cursor.execute(result)
-            except sqlite3.IntegrityError:
-                log.error('integrity error in database.') 
+            except sqlite3.IntegrityError as err:
+                log.error('integrity error in database on request: ')
+                log.error(result)
+                log.error(err) 
             r =  cursor.fetchall()
             return tuple(r)
         return executing_R
@@ -221,13 +223,16 @@ class DB_handler(metaclass=Singleton):
     def _req_add(self, table, dataOrder, *dataList):
 
         # handling pottential sql syntax error due to tuple of len 1 
+
         str_data = []
-        for pottential_single_tuple in [dataOrder, dataList] : 
+        for pottential_single_tuple in [dataOrder, dataList] :
+            # corrected_pottential_single_tuple = tuple([item if item != None else 'NULL' for item in pottential_single_tuple])
             if len(pottential_single_tuple) == 1 : 
                 str_data.append(str(pottential_single_tuple).replace(',', ''))
             else : 
                 str_data.append(str(pottential_single_tuple))
-
+        
+        str_data[1] = str_data[1].replace("None", "NULL")
         sqlrequest = "INSERT INTO "+table+str_data[0]+" VALUES "+str_data[1]
         return sqlrequest
 
@@ -257,7 +262,7 @@ class DB_handler(metaclass=Singleton):
         condition_str = " WHERE "
         for condition_id, condition_value in conditions.items() : 
             if not condition_value : condition_value = 'NULL'
-            condition_str += condition_id + "='"+condition_value + "' AND "
+            condition_str += condition_id + "='"+str(condition_value) + "' AND "
         condition_str = condition_str[:-5]
         return condition_str
 

@@ -203,6 +203,19 @@ class Table():
     def list_field_names(self) : return tuple([field() for field in self._fieldList])
     def list_foreign_keys(self) : return tuple(self._foreignKeyList)
 
+    def get_field(self, fieldName) : 
+        field_match_list = [field for field in self.list_field() if field() == fieldName]
+        len_list = len(field_match_list)
+        if not len_list : 
+            log.error('no field "'+fieldName+'" found in '+table())
+            return None
+        elif len_list > 1 : 
+            log.error('multiple fields ('+str(len_list)+') with same name found in '+field())
+            return None
+        else : 
+            return field_match_list[0]
+
+
 class Field(): 
 
     # MAGIC METHODS '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

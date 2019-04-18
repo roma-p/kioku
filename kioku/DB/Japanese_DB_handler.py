@@ -101,12 +101,6 @@ class  Japanese_DB_handler(DB_handler):
                 # else : hiragana_word = prononciation
                 hiragana_word = word if not prononciation else prononciation # TODO word?
 
-                # DEBUG 
-                if not hiragana_word : 
-                    print('hiragana_word null')
-                    print(word)
-                    print(prononciation)
-
                 hiragana_word = japanese_helpers.convertKanaToHiragana(hiragana_word)
                 core_prononciation = japanese_helpers.gen_core_prononciation(hiragana_word)
                 core_p_detected_set.add(core_prononciation)
@@ -128,14 +122,11 @@ class  Japanese_DB_handler(DB_handler):
         existing_kanjis_set = set(self.list(self.base_format.kanjis, self.base_format.kanjis.name))
         existing_core_p_set = set(self.list(self.base_format.core_prononciations, self.base_format.core_prononciations.name))
 
-        kanjis_to_add_tuple = tuple(kanjis_detected_set - existing_kanjis_set)
-        existing_core_p_set = tuple(existing_core_p_set - existing_core_p_set)
+        kanjis_to_add_tuple = tuple([(k, ) for k in kanjis_detected_set - existing_kanjis_set])
+        core_p_to_add_list = tuple([(p, )for p in core_p_detected_set - existing_core_p_set])
 
-        # CRASH ICI. 
-
-        self.add(self.base_format.kanjis, (self.base_format.kanjis.name,), kanjis_to_add_tuple)
-        self.add(self.base_format.core_prononciations , (self.base_format.core_prononciations.name,), existing_core_p_set)
-
+        self.add(self.base_format.kanjis, (self.base_format.kanjis.name,), *kanjis_to_add_tuple)
+        self.add(self.base_format.core_prononciations , (self.base_format.core_prononciations.name,), *core_p_to_add_list)
 
         # 4) generating the entries that will be add to the database. *********
 
@@ -145,17 +136,15 @@ class  Japanese_DB_handler(DB_handler):
         existing_core_p_dict = self._get_index_as_dict(self.base_format.core_prononciations)
         existing_kanjis_dict = self._get_index_as_dict(self.base_format.kanjis)
 
-
         vocab_final_entries_list = []
         word_kanjis_tmp_entries_dict = {} # < word > : list of kanjis id. 
 
         # generating final entries for table vocab and tmp entries for word kanjis. 
         for tmp_entry in vocab_tmp_entries_list : 
-            word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_list = vocab_tmp_entry
+            word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_list = tmp_entry
             core_prononciation_id = existing_core_p_dict[core_prononciation]
             categorie_id = existing_cat_dict[categorie]
-            tag_id = existing_tag_dict[tag]
-
+            tag_id = existing_tag_dict[tag] if tag else None # TODO ; shall be equal to None. 
             word_kanjis_tmp_entries_dict[word] = [existing_kanjis_dict[kanji] for kanji in kanjis_list]
             vocab_final_entries_list.append((word, prononciation, core_prononciation_id, meaning, example, categorie_id, tag_id))
 
@@ -164,20 +153,21 @@ class  Japanese_DB_handler(DB_handler):
         self.add(self.base_format.vocab , data_order, *vocab_final_entries_list)
 
         # 6) updating word_kanjis tables. 
-        word_id_dict = self._get_index_as_dict(self.base_format, self.base_format.word)
+        word_id_dict = self._get_index_as_dict(self.base_format.vocab, self.base_format.vocab.word)
         word_kanjis_final_entries_list = []
         for word, kanjis_id_tuple in word_kanjis_tmp_entries_dict.items() : 
             for kanji_id in kanjis_id_tuple : 
                 word_kanjis_final_entries_list.append((word_id_dict[word],kanji_id))
         data_order = (self.base_format.word_kanjis.word_id, self.base_format.word_kanjis.kanjis_id)
-        self.add(self.base_format.word_kanjis , data_order, word_kanjis_final_entries_list)
+        self.add(self.base_format.word_kanjis , data_order, *
+            word_kanjis_final_entries_list)
 
         return True
 
     def _get_index_as_dict(self, tableObject, field_to_set_as_key = None) :
         if not field_to_set_as_key : field_to_set_as_key = tableObject.name 
-        item_to_get = [tableObject.name, tableObject.id]
-        data_as_dict = {id : name for (id, name) in self.select(tableObject, item_to_get)}
+        item_to_get = [field_to_set_as_key, tableObject.id]
+        data_as_dict = {id : name for (id, name) in self.select(tableObject, *item_to_get)}
         return data_as_dict
 
     
