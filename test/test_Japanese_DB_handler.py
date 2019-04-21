@@ -7,7 +7,7 @@ log = logging.getLogger()
 
 test_dir = 'test/jp_db/'
 japanese_db_path = test_dir + 'japanese_db.sqlite'
-
+correct_DB = test_dir + 'correct_db.sqlite'
 
 japanese_vocab = [
     ('ふと',None,'accidentellement,  par hasard,  soudainement','suddenly','short',None),
@@ -29,15 +29,17 @@ tag_list = ('short', 'composed')
 
 class TestJapanese_DB_handler(unittest.TestCase) : 
 
-    def setUp(self) : 
-
+    def monkey_patch_JPDB_init(self, db_path, base_format) : 
         def init_patched(self) :
-            db_path = japanese_db_path
-            base_format = japanese_dataBaseFormat.get_baseFormat()
             super(Japanese_DB_handler, self).__init__(db_path, base_format)          
         Japanese_DB_handler.__init__ = init_patched
+        return Japanese_DB_handler()
 
-        jpDB = Japanese_DB_handler()
+    def setUp(self) : 
+
+        db_path = japanese_db_path
+        base_format = japanese_dataBaseFormat.get_baseFormat()
+        jpDB = self.monkey_patch_JPDB_init(db_path, base_format)
         jpDB.generateDB()
 
     def tearDown(self) : 
@@ -47,6 +49,13 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         for path in [japanese_db_path] : 
             if os.path.exists(path) :
                 os.remove(path)
+
+    def connect_to_correct_DB(self) : 
+        jpDB = Japanese_DB_handler()
+        del(jpDB)
+        db_path = correct_DB
+        base_format = japanese_dataBaseFormat.get_baseFormat()
+        return self.monkey_patch_JPDB_init(db_path, base_format)
 
     def test_add_categories_tags_kanjis(self) : 
 
@@ -71,7 +80,6 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         kanjis_set = {'kanji_1', 'kanji_2'}
         kanjis_in_DB = jpDB.list(jpDB.base_format.kanjis, jpDB.base_format.kanjis.name)
         self.assertEqual(set(kanjis_in_DB), kanjis_set)
-
 
     def test_add_vocab(self) : 
         jpDB = Japanese_DB_handler() 
@@ -116,10 +124,24 @@ class TestJapanese_DB_handler(unittest.TestCase) :
 
         kanji_id = jpDB.select(
             jpDB.base_format.word_kanjis, 
-            jpDB.base_format.word_kanjis.kanjis_id,
+            jpDB.base_format.word_kanjis.kanji_id,
             word_id = word_id)[0][0]
 
         self.assertEqual(kanji_id_to_test, kanji_id)
+
+    def test_list_word_with_kanji(self) : 
+        kanji = '青'
+        # kanji = 3
+        jpDB = self.connect_to_correct_DB()
+        a = jpDB.list_word_by_kanjis(kanji)
+        self.assertEqual(a, ('真っ青', '青春'))
+
+    def test_list_word_by_categories(self) : 
+        categorie = 'color'
+        jpDB = self.connect_to_correct_DB()
+        a = jpDB.list_word_by_categorie(categorie)
+        self.assertEqual(a, ('真っ白な', '真っ青'))
+
 
 if __name__ == '__main__': unittest.main()
 

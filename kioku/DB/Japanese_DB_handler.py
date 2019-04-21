@@ -20,10 +20,23 @@ class  Japanese_DB_handler(DB_handler):
 
 
     # TODO : NOT WORKING ANYMORE, MULTIPLE JOIN ON SINGLE QUERY? 
-    def list_word_with_kanji(self, kanji) : 
-        q = Query().select(db_f.word_kanjis, db_f.vocab.word)
-        q.join_left(db_f.vocab, db_f.word_kanjis.word_id , db_f.vocab.id)
-        q.where().equal(db_f.word_kanjis.kanjis, 'kanjis_4')
+    def list_word_by_kanjis(self, kanji) : 
+        f = self.base_format
+        q = Query().select(f.vocab, f.vocab.word)
+        q.join_left(f.vocab.id, f.word_kanjis.word_id)
+        q.join_left(f.word_kanjis.kanji_id , f.kanjis.id)
+        q.where().equal(f.kanjis.name, kanji)
+
+        data = self.executeQuery(q)
+        wordList = tuple([item[0] for item in data])
+        return wordList
+
+    def list_word_by_categorie(self, categorie_name) : 
+        f = self.base_format
+        q = Query().select(f.vocab, f.vocab.word)
+        q.join_left(f.vocab.categorie, f.categories.id)
+        q.where().equal(f.categories.name, categorie_name)
+
         data = self.executeQuery(q)
         wordList = tuple([item[0] for item in data])
         return wordList
@@ -158,7 +171,7 @@ class  Japanese_DB_handler(DB_handler):
         for word, kanjis_id_tuple in word_kanjis_tmp_entries_dict.items() : 
             for kanji_id in kanjis_id_tuple : 
                 word_kanjis_final_entries_list.append((word_id_dict[word],kanji_id))
-        data_order = (self.base_format.word_kanjis.word_id, self.base_format.word_kanjis.kanjis_id)
+        data_order = (self.base_format.word_kanjis.word_id, self.base_format.word_kanjis.kanji_id)
         self.add(self.base_format.word_kanjis , data_order, *
             word_kanjis_final_entries_list)
 
