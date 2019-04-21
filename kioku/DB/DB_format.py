@@ -181,7 +181,7 @@ class Table():
             log.error(fieldName + ' table already exists in Table: ' + self._name)
             return False        
         try : 
-            field = Field(fieldName, fieldType, key, constraints)
+            field = Field(fieldName, fieldType, key, constraints, parent_table = self)
         except ValueError:
             log.error('error adding field '+fieldName+' on table '+self._name)
             return False
@@ -220,7 +220,7 @@ class Field():
 
     # MAGIC METHODS '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    def __init__(self, fieldName, fieldType, key=None, constraints = ()):
+    def __init__(self, fieldName, fieldType, key=None, constraints = (), parent_table = None):
         if not Field._checkFieldData(fieldType, key, constraints) : 
             log.error("could'nt construct Field object "+fieldName)
             raise ValueError()
@@ -229,6 +229,7 @@ class Field():
         self._fieldType = fieldType
         self._key = key
         self._constraints = constraints
+        self._parent_table = parent_table
 
     def __call__(self) : 
         return self._name
@@ -243,6 +244,8 @@ class Field():
     def key(self) : return self._key
     @property
     def constraints(self) : return self._constraints
+    @property
+    def parent_table(self) : return self._parent_table
 
     # CHEKER ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 

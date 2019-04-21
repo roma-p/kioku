@@ -116,6 +116,8 @@ class TestDB_format(unittest.TestCase) :
         s = db_format.add_field(db_format.table1, 'field1', r.type_text(), r.key_primary(), r.constraints_autoincrement(), r.constraints_unique())
         self.assertTrue(s)
 
+        self.assertEqual(db_format.table1.field1.parent_table(), 'table1')
+
         self.assertEqual(db_format.table1.field1(), 'field1')
         self.assertEqual(db_format.table1.field1.fieldType, r.type_text())
         self.assertEqual(db_format.table1.field1.key, r.key_primary())

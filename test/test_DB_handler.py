@@ -226,18 +226,18 @@ class TestDB_Handler(unittest.TestCase) :
         self.assertEqual(data, (('word_1', 'hastuon_1'), ('word_2', 'hastuon_2')))
 
         q = Query().select(db_f.vocab, db_f.vocab.word)
-        q.join_left(db_f.word_kanjis, db_f.vocab.id, db_f.word_kanjis.word_id)
+        q.join_left(db_f.vocab.id, db_f.word_kanjis.word_id)
         q.where().not_equal(db_f.word_kanjis.kanjis, 'kanjis_2')
 
         q = Query().select(db_f.word_kanjis, db_f.vocab.word)
-        q.join_left(db_f.vocab, db_f.word_kanjis.word_id , db_f.vocab.id)
+        q.join_left(db_f.word_kanjis.word_id , db_f.vocab.id)
         q.where().equal(db_f.word_kanjis.kanjis, 'kanjis_2')
 
         data = db_handler.executeQuery(q)
         self.assertEqual(data, (('word_1',), ('word_2',)))      
 
         q = Query().select(db_f.word_kanjis, db_f.vocab.word)
-        q.join_left(db_f.vocab, db_f.word_kanjis.word_id , db_f.vocab.id)
+        q.join_left(db_f.word_kanjis.word_id , db_f.vocab.id)
         q.where().equal(db_f.word_kanjis.kanjis, 'kanjis_4')
 
         data = db_handler.executeQuery(q)

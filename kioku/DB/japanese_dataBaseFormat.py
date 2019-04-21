@@ -63,7 +63,7 @@ baseFormat = {
 	'word_kanjis' : {
 		r.id() : True,
 		'word_id' : not_null_int_field, 
-		'kanjis_id' : not_null_int_field,
+		'kanji_id' : not_null_int_field,
 	},
 	'version' : 1.0
 }

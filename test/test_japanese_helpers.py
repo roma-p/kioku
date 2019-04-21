@@ -1,6 +1,6 @@
 import unittest, logging
 from context import kioku
-from kioku import japanese_helpers
+from kioku.japanese import japanese_helpers
 
 logging.basicConfig()
 
