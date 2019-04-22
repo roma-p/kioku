@@ -14,7 +14,6 @@ def _parseConf():
     if not config_data : return None
     return config_data._sections['kioku']
 
-
 def _generateFileName(path, fileName, suffix = ''):
     """
     return string as path + fileName + suffix + current time. 
@@ -22,7 +21,6 @@ def _generateFileName(path, fileName, suffix = ''):
     now_str = helpers.format_now()
     if suffix : suffix = '_'+ suffix
     return path + '/' + fileName + '_' + now_str + suffix + ".csv"
-
 
 def _is_cjk(character):
     """"
@@ -43,9 +41,7 @@ def _is_cjk(character):
                  (131072, 196607)]
                 ])
 
-
 def _delTrailingSpaces(string): return string.lstrip(' ')
-
 
 def parse(inputFile, outputDir):
 

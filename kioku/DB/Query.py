@@ -120,7 +120,7 @@ class Query() :
         self._sectionList.append(str_query)
         return self
 
-  # generate string '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # generate string '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
     def _generate_str(self) : 
         return ' '.join(self._sectionList)
