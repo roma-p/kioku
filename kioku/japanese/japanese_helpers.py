@@ -46,7 +46,6 @@ def convertKanaToHiragana(word) :
 
 
 # TODO : if u last character, will be bug U, to delete to i guess
-
 def gen_core_prononciation(word) : 
 	word = convertKanaToHiragana(word)
 	if not word : 

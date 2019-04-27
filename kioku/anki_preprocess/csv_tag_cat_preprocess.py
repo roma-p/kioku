@@ -1,11 +1,11 @@
-import logging, os, glob
+import logging, os, glob, shutil
 import csv
 from kioku.DB.Japanese_DB_handler import Japanese_DB_handler
 from shutil import copyfile
 from tempfile import NamedTemporaryFile
 
 log = logging.getLogger()
-
+fields = ['categorie', 'tag', 'word', 'prononciation', 'meaning', 'example']
 # LISTING CATEGORIES / TAGS from csv files ************************************
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -17,27 +17,28 @@ def list_cat_tag_from_csv_dir(directory) :
     if not input_file_list : 
         log.error('no csv file found in ' + directory)
         return
-    list_cat_tag_from_csv_files(input_file_list)
+    list_cat_tag_from_csv_files(*input_file_list)
 
 def list_cat_tag_from_csv(input_file) : 
     if not os.path.exists(input_file) : 
         log.error('file do not exist : ' + input_file)
         return
-    list_cat_tag_from_csv_files((input_file))
+    list_cat_tag_from_csv_files(input_file)
 
-def list_cat_tag_from_csv_files(input_file_list) : 
-    csv_all_cat = {} # all cat found in csv
-    csv_all_tag = {} # all tag found in csv 
-    csv_existing_cat = {} # cat found in csv files already existing in DB.
-    csv_existing_tag = {} # tag found in csv files already existing in DB.
-    csv_new_cat = {} # new cat found in at least on csv file.
-    csv_new_tag = {} # new tag found in at least on csv file.
+def list_cat_tag_from_csv_files(*input_file_list) : 
+    csv_all_cat = set() # all cat found in csv
+    csv_all_tag = set() # all tag found in csv 
+    csv_existing_cat = set() # cat found in csv files already existing in DB.
+    csv_existing_tag = set() # tag found in csv files already existing in DB.
+    csv_new_cat = set() # new cat found in at least on csv file.
+    csv_new_tag = set() # new tag found in at least on csv file.
 
     jpDB = Japanese_DB_handler()
     f = jpDB.base_format
 
     jpDB_cat = set(jpDB.select(f.categories, f.categories.name))
     jpDB_tag = set(jpDB.select(f.tags, f.tags.name))
+
 
     for input_file in input_file_list : 
         found_cat, found_tag = _list_cat_tag_process_single_file(input_file)         
@@ -66,9 +67,8 @@ def list_cat_tag_from_csv_files(input_file_list) :
     log.info('          ')
 
 def _list_cat_tag_process_single_file(input_file) : 
-    found_cat = {}
-    found_tag = {}
-
+    found_cat = set()
+    found_tag = set()
     with open (input_file, 'r') as fout : 
         # TODO : DELIMITER IN CONFIGURATION !
         for row in csv.reader(fout, delimiter = '	'): 
@@ -79,15 +79,18 @@ def _list_cat_tag_process_single_file(input_file) :
 
 def _log_separator(text) : 
     len_of_line = 80 
-    half_sep_len = len_of_line - 2 - len(text) // 2
-    last = len_of_line - 2 - len(text) % 2 
+    half_sep_len = (len_of_line - 2 - len(text)) // 2
+    last = (len_of_line - 2 - len(text)) % 2 
+    log.info('*' * half_sep_len + ' ' + text + ' ' + '*' * half_sep_len + '*' * last)
     log.info('-' * len_of_line)
-    log.info('*' * half_sep_len + ' ' + text + ' ' + half_sep_len + last)
     log.info(' ')
 
 def _log_set(setTolog) : 
-    for item in list(setTolog).sort() : 
-        log.info(item)
+    if not setTolog : 
+        log.info('None found...')
+    else : 
+        for item in sorted(list(setTolog)) : 
+            log.info(item)
 
 
 # PATCHING CATEGORIES TAG of csv files ****************************************
@@ -114,7 +117,7 @@ def patch_cat_tag_csv_dir(input_directory, output_directory, correction_dict) :
     patch_cat_tag_csv_files(*input_output_file_list, **correction_dict)
     return True
     
-def patch_cat_tag_csv(input_file, output_file correction_dict) :
+def patch_cat_tag_csv(input_file, output_file, correction_dict) :
     if not os.path.exists(input_file) : 
         log.error('file not found : '+input_file)
         return False
@@ -127,36 +130,41 @@ def patch_cat_tag_csv(input_file, output_file correction_dict) :
 def patch_cat_tag_csv_files(*input_output_file_list, **correction_dict) : 
 
     inverted_correction_dict = _invert_correction_dict(correction_dict)
+    print(inverted_correction_dict)
     for (input_file, output_file) in input_output_file_list : 
-        patch_cat_tag_process_single_file(input_file, output_file, **correction_dict)
+        patch_cat_tag_process_single_file(input_file, output_file, **inverted_correction_dict)
 
-def patch_cat_tag_process_single_file(input_file, output_file, **correction_dict) : 
+def patch_cat_tag_process_single_file(input_file, output_file, **inverted_correction_dict) : 
 
     copyfile(input_file, output_file)
     temp_file = NamedTemporaryFile(mode='w', delete=False)
     
     with open(output_file, 'r') as csv_file, temp_file : 
 
-        reader = csv.DictReader(csv_file, fieldnames=fields)
-        writer = csv.DictWriter(temp_file, fieldnames=fields)            
+        reader = csv.DictReader(csv_file, fieldnames=fields, delimiter ='	')
+        writer = csv.DictWriter(temp_file, fieldnames=fields, delimiter ='	')            
+
+        print(inverted_correction_dict['categories'].keys())
+        print('judgmented' in inverted_correction_dict['categories'].keys())
 
         for row in reader : 
             # patching categorie and tag if required. 
-            if reader['categorie'] not in inverted_correction_dict['categories'].keys() : categorie = reader['categorie']
-            else : categorie = inverted_correction_dict[reader['categorie']]
-            if reader['tag'] not in inverted_correction_dict['tags'].keys() : tag = reader['tag']
-            else : tag = inverted_correction_dict[reader['tag']]
+            if row['categorie'] not in inverted_correction_dict['categories'].keys() : categorie = row['categorie']
+            else : 
+                categorie = inverted_correction_dict['categories'][row['categorie']]
+            if row['tag'] not in inverted_correction_dict['tags'].keys() : tag = row['tag']
+            else : tag = inverted_correction_dict['tags'][row['tag']]
 
             # other entries left as such. 
-            row = {
+            new_row = {
                 'categorie' : categorie, 
                 'tag' : tag, 
-                'word' : reader['word'],
-                'prononciation' : reader['prononciation'], 
-                'meaning' : reader['meaning'], 
-                'exemple' : reader['exemple']                
+                'word' : row['word'],
+                'prononciation' : row['prononciation'], 
+                'meaning' : row['meaning'], 
+                'example' : row['example']                
             }
-            writer.writerow(row)
+            writer.writerow(new_row)
     
     shutil.move(temp_file.name, output_file)
     log.info('processed : '+ input_file + ', saved at: ' + output_file)
@@ -170,8 +178,9 @@ def _invert_correction_dict(correction_dict) :
     }
 
     for _type in ('categories', 'tags') : 
-        for to_correct_to, list_to_correct in correction_dict[_type].items() : 
-            for item in list_to_correct :  
-                inverted_dict[_type][item] = to_correct_to
+        if _type in correction_dict.keys() : 
+            for to_correct_to, list_to_correct in correction_dict[_type].items() : 
+                for item in list_to_correct :  
+                    inverted_dict[_type][item] = to_correct_to
     return inverted_dict
 

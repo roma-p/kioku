@@ -10,7 +10,7 @@ log = logging.getLogger()
 
 class  Japanese_DB_handler(DB_handler):
 
-    def __init__(self, arg):
+    def __init__(self):
 
         config_data = configuration.getConfiguration()      
         if not config_data : return None 
