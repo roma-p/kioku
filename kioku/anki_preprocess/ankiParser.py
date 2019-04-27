@@ -14,6 +14,9 @@ def _parseConf():
     if not config_data : return None
     return config_data._sections['kioku']
 
+def _getCsvConf(): pass
+
+
 def _generateFileName(path, fileName, suffix = ''):
     """
     return string as path + fileName + suffix + current time. 

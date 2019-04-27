@@ -7,6 +7,7 @@ import kioku.configuration as configuration # not useful, copy done in command m
 from kioku.DB_handler import DB_handler
 import kioku.search
 from  kioku import japanese_dataBaseFormat as jFormat
+from kioku.japanese import japanese_helpers
 
 log = logging.getLogger()
 
@@ -72,6 +73,8 @@ def add_multiple(inputDir) :
     return added_file, all_errors
 
 
+
+
 # CAT SUIVANTE PR RENDRE LE SOFT PLUS UTILISABLE>>
 # UN UPDATE UN DELETE...
 
@@ -117,9 +120,6 @@ def add_vocab_from_csv(fileList) :
 
     for data in vocab_data : 
         newRow = []
-        
-        
-
 
     pass
 
@@ -183,7 +183,6 @@ def _getColFormat(firstRowOfFile) :
             colName2Id[colName] = i
     return colName2Id
 
-
 def _filterExistingVocab()
 
     pass
@@ -197,8 +196,74 @@ def _addVocabToDatabase()
 
     pass
 
+def fill_vocab(row) :
+
+    jp =  Japanese_DB_handler()
+
+    assocation = {
+        jp.base_format.vocab.simpplified_p }
+    pass
 
 
+# HOW DO I ENSURE THAT MODIFYING A DATA WILL NOT CAUSE ENUMERATE TO BE WRONG. 
+
+# -> called at every start of kioku?
+# or called on event? 
+# in a dict such as : method as key, value = every field filled with the method. 
+# if new field detected, backup DB and then try to find the field in values 
+# and execute the method stored as key. 
+# 
+
+# generate simplified_p of vocab table and MAJ simplified_p table
+def update_simplified_p() : pass
+
+    db_handler = DB_handler()
+    f = db_handler.base_format
+    condition  = {f.vocab.simplified_p = None}
+    vocab_data = db_handler.select(f.vocab, f.vocab.id, f.vocab.word, f.vocab.pronomciation, **condition)
+    existing_simplified_p_list = db_handler.list(f.simplified_p, f.name)
+
+    simplified_p_parsed = {}
+    for _id, _word, _prononciation in vocab_data : 
+        _simplified_p = japanese_helpers.gen_core_prononciation(_prononciation) : 
+        if not _simplified_p : 
+            log.error("couldn't achieve simplified pronomciation for "+_word+" :" +_prononciation+" ("+_id+")")
+        else : 
+            db_handler.update(f.vocab, f.vocab.simplified_p, id = _id)
+            simplified_p_parsed.add(_simplified_p)
+
+    entries_to_add = simplified_p_parsed - set(existing_simplified_p_list)
+    entries_to_dlt = set(existing_simplified_p_list) - simplified_p_parsed
+
+    db_handler.add(f.simpplified_p, (f.simplified_p.name,), (entries_to_add))
+    c = {f.simplified_p.name : entries_to_dlt}
+    db_handler.delete(f.simplified_p, **c)
+
+    #DB HANDLER SHALL HANDLE IN CONDITIONS / CHECK EMPTY. 
+
+# MAJ categorie table
+def update_categorie() : pass
+    # diff entre set() de cat de vocab et set de la table cat
+#  MAJ tag table
+def update_tag() : pass
+    # diff entre set() de cat de vocab et set de la table cat
+#  MAJ kanjis and word_kanjis table
+def update_kanjis() : pass 
+
+def _update_enumarateTable(actual_state, state_to_achieve) : 
+    pass
+
+# Update method check this dictionnary. 
+# Add method : first fiells the 'by hand' field
+# then calls every of those methods. s
+
+f = DB_handler.base_format
+update_method = {
+    update_simplified_p() : (f.vocab.simplified_p, f.simplified_p.name),
+    update_categorie() : (f.categorie.name,),
+    update_tag() : (f.tag.name,),
+    update_kanjis() : (f.word_kanjis.word_id, f.word_kanjis.kanjis)
+}
 
 
 

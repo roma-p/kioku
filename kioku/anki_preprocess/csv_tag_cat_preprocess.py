@@ -1,15 +1,16 @@
 import logging, os, glob, shutil
 import csv
-from kioku.DB.Japanese_DB_handler import Japanese_DB_handler
 from shutil import copyfile
 from tempfile import NamedTemporaryFile
+from kioku.DB.Japanese_DB_handler import Japanese_DB_handler
+import kioku.configuration as configuration
 
 log = logging.getLogger()
 fields = ['categorie', 'tag', 'word', 'prononciation', 'meaning', 'example']
 # LISTING CATEGORIES / TAGS from csv files ************************************
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-def list_cat_tag_from_csv_dir(directory) :
+def list_cat_tag_from_csv_dir(directory, log_info = False) :
     if not os.path.exists(directory) : 
         log.error('directory do not exist : '+ directory)
         return
@@ -17,15 +18,15 @@ def list_cat_tag_from_csv_dir(directory) :
     if not input_file_list : 
         log.error('no csv file found in ' + directory)
         return
-    list_cat_tag_from_csv_files(*input_file_list)
+    return list_cat_tag_from_csv_files(*input_file_list, log_info = False)
 
-def list_cat_tag_from_csv(input_file) : 
+def list_cat_tag_from_csv(input_file, log_info = False) : 
     if not os.path.exists(input_file) : 
         log.error('file do not exist : ' + input_file)
         return
-    list_cat_tag_from_csv_files(input_file)
+    return list_cat_tag_from_csv_files(input_file, log_info = False)
 
-def list_cat_tag_from_csv_files(*input_file_list) : 
+def list_cat_tag_from_csv_files(*input_file_list, log_info = False) : 
     csv_all_cat = set() # all cat found in csv
     csv_all_tag = set() # all tag found in csv 
     csv_existing_cat = set() # cat found in csv files already existing in DB.
@@ -51,24 +52,29 @@ def list_cat_tag_from_csv_files(*input_file_list) :
     csv_new_cat = csv_all_cat - csv_existing_cat
     csv_new_tag = csv_all_tag - csv_existing_tag
 
-    _log_separator('categories')
-    log.info('1 : existing categories : ') 
-    _log_set(csv_existing_cat)
-    log.info('          ')
-    log.info('2 : existing categories : ') 
-    _log_set(csv_new_cat)
-    log.info('          ')
-    _log_separator('tags')
-    log.info('1 : existing tags : ') 
-    _log_set(csv_existing_tag)
-    log.info('          ')
-    log.info('2 : existing tags : ') 
-    _log_set(csv_new_tag)
-    log.info('          ')
+    if log_info : 
+    	_log_separator('categories')
+    	log.info('1 : existing categories : ') 
+    	_log_set(csv_existing_cat)
+    	log.info('          ')
+    	log.info('2 : existing categories : ') 
+    	_log_set(csv_new_cat)
+    	log.info('          ')
+    	_log_separator('tags')
+    	log.info('1 : existing tags : ') 
+    	_log_set(csv_existing_tag)
+    	log.info('          ')
+    	log.info('2 : existing tags : ') 
+    	_log_set(csv_new_tag)
+    	log.info('          ')
+
+    return csv_existing_cat, csv_new_cat, csv_existing_tag, csv_new_tag
 
 def _list_cat_tag_process_single_file(input_file) : 
     found_cat = set()
     found_tag = set()
+    delimiter = _get_delimiter() # cqnt work with tab in python. 
+
     with open (input_file, 'r') as fout : 
         # TODO : DELIMITER IN CONFIGURATION !
         for row in csv.reader(fout, delimiter = '	'): 
@@ -130,22 +136,20 @@ def patch_cat_tag_csv(input_file, output_file, correction_dict) :
 def patch_cat_tag_csv_files(*input_output_file_list, **correction_dict) : 
 
     inverted_correction_dict = _invert_correction_dict(correction_dict)
-    print(inverted_correction_dict)
     for (input_file, output_file) in input_output_file_list : 
         patch_cat_tag_process_single_file(input_file, output_file, **inverted_correction_dict)
 
 def patch_cat_tag_process_single_file(input_file, output_file, **inverted_correction_dict) : 
 
+    delimiter = _get_delimiter()
     copyfile(input_file, output_file)
     temp_file = NamedTemporaryFile(mode='w', delete=False)
-    
+
     with open(output_file, 'r') as csv_file, temp_file : 
 
-        reader = csv.DictReader(csv_file, fieldnames=fields, delimiter ='	')
-        writer = csv.DictWriter(temp_file, fieldnames=fields, delimiter ='	')            
+        reader = csv.DictReader(csv_file,  fieldnames=fields, delimiter = '	')
+        writer = csv.DictWriter(temp_file, fieldnames=fields, delimiter = '	')            
 
-        print(inverted_correction_dict['categories'].keys())
-        print('judgmented' in inverted_correction_dict['categories'].keys())
 
         for row in reader : 
             # patching categorie and tag if required. 
@@ -184,3 +188,7 @@ def _invert_correction_dict(correction_dict) :
                     inverted_dict[_type][item] = to_correct_to
     return inverted_dict
 
+# HELPERS '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+def _get_delimiter() : 
+    return configuration.getConfiguration()._sections['csv']['delimiter']

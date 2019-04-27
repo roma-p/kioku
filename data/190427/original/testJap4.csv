@@ -1,0 +1,101 @@
+categorie	tag	word	prononciation	meaning	example
+time		今頃	いまごろ	à cette heure, récemment,  vers cette époque	
+interact		介入	かいにゅう	immixtion, intervention	
+body		介抱	かいほう	garder (un malade, un enfant), soigner,  surveiller	
+society	ERROR	介抱	かいほう	Je suis en train de aller au travail	
+society		仕事柄	しごとがら	for work,  work-related	
+		仕方	しかた	méthode, manière, moyen	
+people		他人	たにん	Les Autres personnes	
+	logic	他方	たほう	d'un autre côté,  un autre côté,  une autre direction	
+interact	composed	付き合う	つきあう	Être en compagnie de Frequenter qqun  Trainer avec	
+		付ける	着ける	Attacher un truc à un autre	つける
+		付け加える	つけくわえる	Attacher un truc à un autre	
+	logic	代わり	かわり	À la place de, remplacemet (One's place)	
+	logic	代わりに	かわりに	instead of, for, as, in exchange for, in return (for), to make up for	
+	logic	以下	いか	jusqu'à, moins que, sous	
+time	short	以前,	いぜん	autrefois, avant	
+	logic	以外	いがい	à l'exception de, sauf	
+people		仲が良い	なかがよい	close, intimate, on good terms	私はあの男と仲がよかった。 I was on close terms with him.
+interact		仲直りしたよ	なかなおり	Se reconcilier, faire la paix	
+people		仲間	なかま	camarade,  compagnon,  complice, copain	
+right		任命	にんめい	désignation, nomination	
+interact		会話	かいわ	Conversations /dialogues	
+society		会議室	室:しつ かいぎしつ	Salle de conf, réunion	
+society		会館	かいかん	halle, salle de réunion	
+movement		伝う	つたう	Suivre, longer	
+		伝記	でんき	Biographie	
+people		伯母	おば	Tante	
+people		伯父	おじ	Oncle	
+house		住所	じゅうしょ	Adresse / résidence	
+body		体の具合が悪い		L’etat de mon corps est mal	
+school		体育の授業	体育:たいいく	Cours de sport	
+body		体調	たいちょう	Conditions physiques	
+body		体質	たいしつ	Constitution	
+few	short	何だか	なんだか	(a) little,  somewhat, somehow	
+few	short	何とも	なんとも	(aff) complètement,  (nég) rien, pas le moindre	
+few	short	何人か	なんにんか	Some people	
+	logic	何処	どこ	Où	
+	logic	何故か	なぜか  Donne l'expression 何故かと言うと :なぜかというと: c'est pourquoi....	Pour une raison ou pour une autre	
+	ERROR	何故か	なぜか  Donne l'expression 何故かと言うと :なぜかというと: c'est pourquoi....	Le jour se lève à quelle heure?	
+time	logic	何時までも	いつまでも	éternellement,  aussi longtemps qu'on veut, indéfiniment,  pour toujours	
+	logic	何枚	なんまい	Combien? (D'objet plats)	
+lot	short	余り	あんまり	excès, résidu, reste,  surplus, trop, trop-plein	
+time		余暇	よか	Temps libre, loisir	
+time		余裕	よゆう	marge, place,  surplus, temps (Temps qu'il te reste)	
+		作動する	さどう:mouvement	Démarrer	
+people		作家	さっか	Ecrivain, auteur	
+paper		作文	さくぶん	Composition  Texte, essai	
+		使い方	つかいかた	Manière d'utiliser Mode d'emploi	
+language		使役動詞	しえきどうし	Verbe causatif	
+		使用	しよう	application, emploi, utilisation	
+	expression	例えば	たとえば	par exemple	
+language		例外	れいがい	exception	
+language		例文	れいぶん	exemple (phrase modèle)	
+getting		供する	きょうする	to offer,  to present,  to submit,  to serve (a meal), to supply	
+getting		依頼	いらい	Demande requête	
+accomplish		価値がある	かち	Avoir du mérite	
+judgement		便利な	べんりな	Pratique, utile	
+suddenly		俄に	にわかに	Soudainement	
+		保つ	たもつ	conserver, garder	体面を保つために行った。 For appearances sake, I went.
+country		保守的	ほしゅてき	conservateur	いかなる政党も本質的に保守的である。 Any political party is conservative in itself.
+risk		保険	ほけん	assurance	
+reality		信じ難い	しんじがたい	unbelievable, incredible, implausible	
+mental		信用する	しんよう	Faire confiance	
+		修理	しゅうり	dépannage, réfection, réparation	
+me		俺	おれ	Je (Viril)	
+me		個人的な	こじん	Individuel, personnel	
+		倒す	たおす 倒れる	Abattre, tuer Vaincre	
+judgement		偉い	えらい	éminent, admirable,  célèbre, grand	
+body		健康	けんこう	Santé	
+location		側	そば	A coté, proximité...	
+few	short	偶に	たまに	Occasionnellement	
+location		傍ら	かたわら	A proximité	
+weather		傘	かさ	Parapluie	
+weather		傘をさします		J'ouvre mon parapluie	
+		働かせる	はたらかせる	Fr travailler	
+		働き過ぎる	はたらきすぎる	Travailler trop	
+money		償う	つぐなう	compenser,  dédommager,  expier,  indemniser, se racheter	
+accomplish		優勝	ゆうしょう	Victoire, championnat	
+	double	元々	もともと	à l'origine, depuis le commencement,  depuis le départ,  originairement, par nature	
+accomplish		元気を出す	げんきをだす	to cheer up  (often used with command or request form addressing someone else)	
+people		兄弟	きょうだい	Frères frères et soeurs, fratrie...	
+time		先日	せんじつ	Il y a quelque jours, l'autre jour	
+		先生がいくら注意しても子供たちは静かにしません			
+		先約がある	せんゃく	Avoir un rdv	
+		光る	ひかる	Briller, étinceler	
+time		光陰	こういん	time,  Father Time	
+time		光陰矢の如し	こういんやのごとし	time flies like an arrow,  time and tide wait for no man,  life is short	
+right		免許	めんきょ	autorisation,  certificat, license, permis	
+animal		兎	ウサギ  うさぎ	Lapin	
+circulation		入り口	いりぐち	Entrée, porte, bouche de métro	
+		入れ換える	空気を入れ換える いれかえる	Remplacer, substituer	
+		入れ替わる	いれかわる	to change places,  to relieve one another,  to replace someone	
+		入院	にゅういん	hospitalisation Entrer à l'hopital	
+accomplish		全うする	まっとう 全し:parfait	Remplir (Mission tache...)	
+me		公私	こうし	public and private,  official and personal,  government and people	
+country		共和国	きょうわこく	république	
+character		共感	きょうかん	sympathie	
+situation		具合	ぐあい	état, état de forme, condition	
+mental		内緒	ないしょ	confidentiel, secret	
+mental		冗談	じょうだん	Plaisanterie	
+screen		写る	うつる	Être photographié	
