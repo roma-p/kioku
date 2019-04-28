@@ -41,22 +41,22 @@ class  Japanese_DB_handler(DB_handler):
         wordList = tuple([item[0] for item in data])
         return wordList
 
-    def add_categories(self, *categorie_list) : 
+    def add_categories(self, *categorie_list, silent = False) : 
         table = self.base_format.categories
         field = self.base_format.categories.name
-        self._add_to_db_index(table, field, categorie_list)
+        self._add_to_db_index(table, field, categorie_list, silent)
 
-    def add_tags(self, *tag_list) :
+    def add_tags(self, *tag_list, silent = False) :
         table = self.base_format.tags
         field = self.base_format.tags.name
-        self._add_to_db_index(table, field, tag_list)
+        self._add_to_db_index(table, field, tag_list, silent)
 
-    def add_kanjis(self, *kanjis_list) :
+    def add_kanjis(self, *kanjis_list, silent = False) :
         table = self.base_format.kanjis
         field = self.base_format.kanjis.name
-        self._add_to_db_index(table, field, kanjis_list)
+        self._add_to_db_index(table, field, kanjis_list, silent)
 
-    def _add_to_db_index(self, table, field, list_of_index_entries):
+    def _add_to_db_index(self, table, field, list_of_index_entries, silent = False):
 
         data_order = (field,)
         formatted_data = [(entry,) for entry in set(list_of_index_entries)]
@@ -65,7 +65,7 @@ class  Japanese_DB_handler(DB_handler):
         duplicate_set = set(existing_list) & set(formatted_data)
         valid_set = set(formatted_data) - set(existing_list)
 
-        if duplicate_set : 
+        if not silent and duplicate_set : 
             log.warning('following data already exists in table/field : ' +table()+ '/'+ field() + ' and will not be added.')
             for data in duplicate_set: 
                 log.warning(data[0] + ' already exists.') 
@@ -73,7 +73,7 @@ class  Japanese_DB_handler(DB_handler):
 
     # data expected : 
     # ('word', 'prononciation', 'meaning','categorie','tag', 'example')
-    def add_vocab(self, *vocab_list) :
+    def add_vocab(self, *vocab_list, mendatory_prononciation = True) :
         data_order = ('word', 'prononciation', 'core_prononciation',
             'meaning','example','categorie','tag')
 
@@ -93,11 +93,15 @@ class  Japanese_DB_handler(DB_handler):
         for vocab in vocab_list : 
             word, prononciation, meaning, categorie, tag, example = vocab
             valid = True
-            # 1 : first : checking validity of single data. 
-            for single_data in word, meaning : 
-                if not single_data : 
-                    log.error('missing word / meaning detected.')
-                    valid = False
+            # 1 : first : checking validity of single data.
+            if not word : 
+                log.error('missing word for entries with prononciation : '+ str(prononciation))
+                error_list.append(vocab)
+                valid = False 
+            if not meaning : 
+                log.error('missing meaning for word : '+ str(word))
+                error_list.append(vocab)
+                valid = False
             if categorie and categorie not in existing_cat_tuple : 
                 log.error("can't add "+ word + ", categorie " + categorie + " does not exists.")
                 error_list.append(vocab)
@@ -108,24 +112,29 @@ class  Japanese_DB_handler(DB_handler):
                 valid = False
             # 2 generating core pronomciation, extracting kanjis. 
             if valid :
-
                 # generating core prononciation
                 # if not prononciation : hiragana_word = word 
                 # else : hiragana_word = prononciation
                 hiragana_word = word if not prononciation else prononciation # TODO word?
-
                 hiragana_word = japanese_helpers.convertKanaToHiragana(hiragana_word)
-                core_prononciation = japanese_helpers.gen_core_prononciation(hiragana_word)
-                core_p_detected_set.add(core_prononciation)
+                valid_hiragana = japanese_helpers.is_word_kana(hiragana_word)
+                if not valid_hiragana : 
+                    log.error('prononciation / word not in kana : '+ str(word))
+                    error_list.append(vocab)
+                    if mendatory_prononciation : 
+                        error_list.append(vocab)
+                    core_prononciation = None
+                else : 
+                    core_prononciation = japanese_helpers.gen_core_prononciation(hiragana_word)
+                    core_p_detected_set.add(core_prononciation)
 
                 # listing kanjis present in the word
                 kanjis_tuple = japanese_helpers.list_kanjis(word)
                 kanjis_detected_set.update(set(kanjis_tuple))
-
                 vocab_tmp_entry = (word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_tuple)
                 vocab_tmp_entries_list.append(vocab_tmp_entry)
 
-        if error_list : 
+        if error_list or not valid: 
             log.error('errors detected in vocab list for following etnries, db not updated : ')
             for error in error_list : 
                 log.error(str(error))

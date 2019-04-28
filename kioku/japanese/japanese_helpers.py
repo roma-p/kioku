@@ -21,6 +21,13 @@ def is_kana(character) : return is_hiragana(character) or is_katagana(character)
 def list_kanjis(word) : 
 	return tuple([character for character in word if is_kanjis(character)])
 
+def is_word_kana(word) : 
+	if not word : return False
+	for character in word : 
+		if not is_kana(character) : return False
+	return True
+	
+
 def unicode_range_hiragana() : return 12352, 12447
 def unicode_range_katakana() : return 12448, 12543
 def unicode_range_kanjis() : return 19968, 40879
