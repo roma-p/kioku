@@ -73,6 +73,9 @@ class  Japanese_DB_handler(DB_handler):
 
     # data expected : 
     # ('word', 'prononciation', 'meaning','categorie','tag', 'example')
+    
+    # TODO : doublon dans fichier meme pas checker ... 
+
     def add_vocab(self, *vocab_list, mendatory_prononciation = True) :
         data_order = ('word', 'prononciation', 'core_prononciation',
             'meaning','example','categorie','tag')
@@ -87,9 +90,14 @@ class  Japanese_DB_handler(DB_handler):
         #    else : listing kanjis and generating core pronomciation.
         #           and listing them to update kanjis/core_prononciation tables 
         error_list = []
+        warning_error_list = []
+
         vocab_tmp_entries_list = []
         kanjis_detected_set = set()
         core_p_detected_set = set()
+        word_set = set()
+
+
         for vocab in vocab_list : 
             word, prononciation, meaning, categorie, tag, example = vocab
             valid = True
@@ -110,11 +118,17 @@ class  Japanese_DB_handler(DB_handler):
                 log.error("can't add "+ word + ", tags " + tag + " does not exists.")
                 error_list.append(vocab)
                 valid = False
+            if word in word_set : 
+                log.error('duplicate item found : word ' + word + '.' )
+                warning_error_list.append(vocab)
+                valid = False
+
             # 2 generating core pronomciation, extracting kanjis. 
             if valid :
                 # generating core prononciation
                 # if not prononciation : hiragana_word = word 
                 # else : hiragana_word = prononciation
+                word_set.add(word)
                 hiragana_word = word if not prononciation else prononciation # TODO word?
                 hiragana_word = japanese_helpers.convertKanaToHiragana(hiragana_word)
                 valid_hiragana = japanese_helpers.is_word_kana(hiragana_word)
@@ -134,7 +148,12 @@ class  Japanese_DB_handler(DB_handler):
                 vocab_tmp_entry = (word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_tuple)
                 vocab_tmp_entries_list.append(vocab_tmp_entry)
 
-        if error_list or not valid: 
+        if warning_error_list : 
+            log.warning('following entries were ignored because of an error : ')
+            for warning in warning_error_list : 
+                log.warning(str(warning))
+
+        if error_list: 
             log.error('errors detected in vocab list for following etnries, db not updated : ')
             for error in error_list : 
                 log.error(str(error))
