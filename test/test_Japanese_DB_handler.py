@@ -133,14 +133,23 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         kanji = '青'
         # kanji = 3
         jpDB = self.connect_to_correct_DB()
-        a = jpDB.list_word_by_kanjis(kanji)
-        self.assertEqual(a, ('真っ青', '青春'))
+
+        a = jpDB.list_word_by_kanjis(kanji, jpDB.base_format.vocab.word)
+        self.assertEqual(a, (('真っ青',), ('青春',)))
 
     def test_list_word_by_categories(self) : 
         categorie = 'color'
         jpDB = self.connect_to_correct_DB()
-        a = jpDB.list_word_by_categorie(categorie)
-        self.assertEqual(a, ('真っ白な', '真っ青'))
+        a = jpDB.list_word_by_categorie(categorie, jpDB.base_format.vocab.word)
+        self.assertEqual(a, (('真っ白な',), ('真っ青',)))
+
+    def test_list_categorie_by_usage(self) : 
+        jpDB = self.connect_to_correct_DB()
+        a = jpDB.list_categorie_by_usage()
+
+    def test_list_kanjis_by_usage(self) : 
+        jpDB = self.connect_to_correct_DB()
+        a = jpDB.list_kanjis_by_usage()
 
 
 if __name__ == '__main__': unittest.main()

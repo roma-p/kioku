@@ -15,12 +15,22 @@ class Query() :
 
     # select ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    def select(self, mainTableObject, *fieldToSelect) : 
-        self._sectionList.append(_str_select('SELECT', mainTableObject, fieldToSelect))
+    def select(self, mainTableObject, *fieldToSelect, count_field = None) : 
+        self._sectionList.append(self._str_select('SELECT', mainTableObject, fieldToSelect, count_field = count_field))
         self._shall_exist[mainTableObject()] = set()
         self.update_shall_exist(*fieldToSelect)
         self._mainTable = mainTableObject()
         return self
+
+    def _str_select(self, selectType, mainTableObject, fieldToGet, count_field = None) : 
+        selector = ''
+        for field in fieldToGet : selector+= field.parent_table()+'.'+field()+', '
+        if count_field : 
+            selector += self._count_str(count_field)+', '
+        selector = selector[:-2]+' '
+        sqlrequest = "SELECT " + selector + "FROM " + mainTableObject()
+        return sqlrequest
+
 
     # ?? KEY WORD ARG? BUT IN CASES OF ALIAS?
     # def select_distinct() :
@@ -32,7 +42,15 @@ class Query() :
     #     self._lastTableName = tableName
     #     return self
 
-    def count() : pass
+    def count(self, field) : 
+        self._sectionList.append(self._count_str(field))
+        return self
+
+    def _count_str(self, field) : 
+        self.update_shall_exist(field)
+        field_str = _format_string_from_fieldObject(field)
+        rqt = ('COUNT ('+field_str+')')
+        return rqt
 
     def add(): 
         return self
@@ -102,12 +120,41 @@ class Query() :
 
     #  '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+    def group_by(self, field) : 
+        self.update_shall_exist(field) 
+        field_str = _format_string_from_fieldObject(field)
+        str_query = 'GROUP BY ' + field_str
+        self._sectionList.append(str_query)
+        return self
+
     def order_by(self, field) :
         self.update_shall_exist(field) 
         field_str = _format_string_from_fieldObject(field)
         str_query = 'ORDER BY ' + field_str
         self._sectionList.append(str_query)
         return self
+
+    def order_by_count(self, field) : 
+        self.update_shall_exist(field) 
+        count_str = self._count_str(field)
+        str_query = 'ORDER BY '+ count_str
+        self._sectionList.append(str_query)
+        return self        
+
+    def asc(self) : 
+        self._sectionList.append('ASC')
+        return self
+
+    def desc(self) : 
+        self._sectionList.append('DESC')
+        return self
+
+    def limit(self, limit, offset = None) : 
+        str_sql = 'LIMIT '+str(limit)
+        if offset : str_sql += " OFFSET "+str(offset)        
+        self._sectionList.append(str_query)
+        return self
+
 
     # join ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -149,13 +196,6 @@ def _format_value_from_type(*valueList) :
             status = False
     if status : return updated_values
     else : return None
-    
-def _str_select(selectType, mainTableObject, fieldToGet) : 
-    selector = ''
-    for field in fieldToGet : selector+= field.parent_table()+'.'+field()+', '
-    selector = selector[:-2]+' '
-    sqlrequest = "SELECT " + selector + "FROM " + mainTableObject()
-    return sqlrequest
 
 def _format_string_from_fieldObject(fieldObject) : 
     return fieldObject.parent_table() + '.' + fieldObject()

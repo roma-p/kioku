@@ -11,35 +11,110 @@ log = logging.getLogger()
 class  Japanese_DB_handler(DB_handler):
 
     def __init__(self):
-
         config_data = configuration.getConfiguration()      
         if not config_data : return None 
         db_path = config_data.get('kioku', 'db_path')
         base_format = japanese_dataBaseFormat.get_baseFormat()
         super().__init__(db_path, base_format)
 
+    # GETTING DATA ************************************************************
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    # TODO : NOT WORKING ANYMORE, MULTIPLE JOIN ON SINGLE QUERY? 
-    def list_word_by_kanjis(self, kanji) : 
+    # LISTING VOCABULARY ******************************************************
+
+    def list_word_by_kanjis(self, kanji, *fieldToGet) : 
         f = self.base_format
-        q = Query().select(f.vocab, f.vocab.word)
+        if not self._check_field_in_vocab(fieldToGet) : return None
+        q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.id, f.word_kanjis.word_id)
         q.join_left(f.word_kanjis.kanji_id , f.kanjis.id)
         q.where().equal(f.kanjis.name, kanji)
-
         data = self.executeQuery(q)
-        wordList = tuple([item[0] for item in data])
-        return wordList
+        return data
 
-    def list_word_by_categorie(self, categorie_name) : 
+    def list_word_by_core_prononciation(self, core_p, *fieldToGet) : 
         f = self.base_format
-        q = Query().select(f.vocab, f.vocab.word)
+        if not self._check_field_in_vocab(fieldToGet) : return None
+        q = Query().select(f.vocab, *fieldToGet)
+        q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
+        q.where().equal(f.core_prononciations.name, core_p)
+        data = self.executeQuery(q)
+        return data
+
+    def list_word_by_categorie(self, categorie_name, *fieldToGet) : 
+        f = self.base_format
+        if not self._check_field_in_vocab(fieldToGet) : return None
+        q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.categorie, f.categories.id)
         q.where().equal(f.categories.name, categorie_name)
-
         data = self.executeQuery(q)
-        wordList = tuple([item[0] for item in data])
-        return wordList
+        return data
+
+    def list_word_by_tag(self, tag_name, *fieldToGet) : 
+        f = self.base_format
+        if not self._check_field_in_vocab(fieldToGet) : return None
+        q = Query().select(f.vocab, *fieldToGet)
+        q.join_left(f.vocab.tag, f.tags.id)
+        q.where().equal(f.tags.name, tag_name)
+        data = self.executeQuery(q)
+        return data
+
+    def _check_field_in_vocab(self, fieldTocheck) : 
+        err_set = set()
+        if not fieldTocheck : 
+            log.error('no field to select!')
+            return False
+        for field in fieldTocheck :
+            if field.parent_table != self.base_format.vocab : 
+                err_set.add(field)
+        if err_set : 
+            log.error('following fields are not in vocab table, cant proceed')
+            for field in err_set : 
+                log.error(field())
+            return False
+        return True
+
+
+    # LISTING CRITIRUM ********************************************************
+
+    def list_kanjis_by_usage(self, limit = None) : 
+        f = self.base_format
+        q = Query().select(f.word_kanjis, f.kanjis.name, count_field  = f.word_kanjis.word_id)
+        q.join_left(f.word_kanjis.kanji_id, f.kanjis.id)
+        q.group_by(f.word_kanjis.kanji_id)
+        q.order_by_count(f.word_kanjis.word_id).desc()
+        if limit : 
+            q.limit(limit, offset)
+        data = self.executeQuery(q)
+        return data
+        #q = Query().select(f.kanjis, f.kanjis.name).count(f.word_kanjis)
+        #q,
+
+    def list_categorie_by_usage(self, limit = None, offset = None) : 
+        f = self.base_format
+        q = Query().select(f.vocab, f.categories.name, count_field = f.vocab.categorie)
+        q.join_left(f.vocab.categorie, f.categories.id)
+        q.group_by(f.vocab.categorie)
+        q.order_by_count(f.vocab.id).desc()
+        if limit : 
+            q.limit(limit, offset)
+        data = self.executeQuery(q)
+        return data
+
+    def list_tag_by_usage(sself, limit = None, offset = None) :
+        f = self.base_format
+        q = Query().select(f.vocab, f.tags.name, count_field = f.vocab.id)
+        q.join_left(f.vocab.tag, f.tags.id)
+        q.group_by(f.vocab.tag)
+        q.order_by_count(f.vocab.id).desc()
+        if limit : 
+            q.limit(limit, offset)
+        data = self.executeQuery(q)
+        return data        
+
+
+    # ADDIND DATA *************************************************************
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
     def add_categories(self, *categorie_list, silent = False) : 
         table = self.base_format.categories
@@ -73,9 +148,6 @@ class  Japanese_DB_handler(DB_handler):
 
     # data expected : 
     # ('word', 'prononciation', 'meaning','categorie','tag', 'example')
-    
-    # TODO : doublon dans fichier meme pas checker ... 
-
     def add_vocab(self, *vocab_list, mendatory_prononciation = True) :
         data_order = ('word', 'prononciation', 'core_prononciation',
             'meaning','example','categorie','tag')
@@ -210,5 +282,3 @@ class  Japanese_DB_handler(DB_handler):
         item_to_get = [field_to_set_as_key, tableObject.id]
         data_as_dict = {id : name for (id, name) in self.select(tableObject, *item_to_get)}
         return data_as_dict
-
-    
