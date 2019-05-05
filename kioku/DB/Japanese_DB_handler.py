@@ -75,9 +75,9 @@ class  Japanese_DB_handler(DB_handler):
         return True
 
 
-    # LISTING CRITIRUM ********************************************************
+    # LISTING CRITERIUM ********************************************************
 
-    def list_kanjis_by_usage(self, limit = None) : 
+    def list_kanjis_by_usage(self, limit = None, offset = None) : 
         f = self.base_format
         q = Query().select(f.word_kanjis, f.kanjis.name, count_field  = f.word_kanjis.word_id)
         q.join_left(f.word_kanjis.kanji_id, f.kanjis.id)
@@ -101,7 +101,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_tag_by_usage(sself, limit = None, offset = None) :
+    def list_tag_by_usage(self, limit = None, offset = None) :
         f = self.base_format
         q = Query().select(f.vocab, f.tags.name, count_field = f.vocab.id)
         q.join_left(f.vocab.tag, f.tags.id)
@@ -112,6 +112,16 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data        
 
+    def list_core_p_by_usage(self, limit = None, offset = None) :
+        f = self.base_format
+        q = Query().select(f.vocab, f.core_prononciations.name, count_field = f.vocab.id)
+        q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
+        q.group_by(f.vocab.core_prononciation)
+        q.order_by_count(f.vocab.id).desc()
+        if limit : 
+            q.limit(limit, offset)
+        data = self.executeQuery(q)
+        return data        
 
     # ADDIND DATA *************************************************************
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -282,3 +292,44 @@ class  Japanese_DB_handler(DB_handler):
         item_to_get = [field_to_set_as_key, tableObject.id]
         data_as_dict = {id : name for (id, name) in self.select(tableObject, *item_to_get)}
         return data_as_dict
+
+
+    # DB STAT *****************************************************************
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+    def get_db_stat(self) : 
+        row_limit = 10 
+        stat_dict = {}
+        stat_dict['vocab_number'] = self.count(self.base_format.vocab)
+        stat_dict['categories_number'] = self.count(self.base_format.categories)
+        stat_dict['tags_number'] = self.count(self.base_format.tags)
+        stat_dict['kanjis_number'] = self.count(self.base_format.kanjis)
+        stat_dict['most_used_categories'] = self.list_categorie_by_usage(limit = row_limit)
+        stat_dict['most_used_tags'] = self.list_tag_by_usage(limit = row_limit)
+        stat_dict['most_used_kanjis'] = self.list_kanjis_by_usage(limit = row_limit)
+        stat_dict['most_used_core_p'] = self.list_core_p_by_usage(limit = row_limit)
+        return stat_dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

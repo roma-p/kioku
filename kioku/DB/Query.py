@@ -150,7 +150,7 @@ class Query() :
         return self
 
     def limit(self, limit, offset = None) : 
-        str_sql = 'LIMIT '+str(limit)
+        str_query = 'LIMIT '+str(limit)
         if offset : str_sql += " OFFSET "+str(offset)        
         self._sectionList.append(str_query)
         return self
