@@ -24,7 +24,48 @@ class Singleton(type) :
 
 class DB_handler(metaclass=Singleton):
         
+    """
+    DB_handler is a singleton class to handle a sqlite database.
 
+    argument to construct it are : 
+    - db_path : path to the sqlite database file. 
+    - base_format : an input dictionnary to construct DB_format object
+                    (see doc of this class for more info.)
+
+    DB_handler handle the connection to the sqlite database : 
+    (storing the result of sqlite3.connect in DB_handler.kiokuDB)
+
+    - If sqlite file given in db_path does exists, it will connect upon creation
+    - If not, user can generate the databse using DB_handler.generateDB().
+    - The dataase will be created according base_format, and DB_handler will connect to it. 
+    - Connection will be close upon destruction of DB_handler (might need to collect gc)
+    - foreign keys are enabled by default (can be changed using DB_handler.enable_foreign_keys)
+
+    DB_handler offers services so user doesn't have to manage sqlite library himself
+    cursors, commits ... 
+
+    DB_handler provides simple services by itself to : 
+
+    - fetching data using methods :  select(), list(), count()
+    - modifying data using : add / delete / replace / update 
+    
+    all those methods can take **conditions argument, conditions usage is limited,
+    passing following dictionnary as **conditions : 
+    {'field_1' = 'value_1', 'field_2' : 'value_2', 'field_3' : 'value_3'}
+    will generated the following sql query : 
+    'WHERE field_1=value_1 AND field_2=value_2 AND field_3=value_3'
+    So you can't use OR / != / IN etc... neither construct intracated queries. 
+
+    To process more refined process on DB_handler, user have to construct a Query object
+    DB_handler can use Query object to process database using the executeQuery() method. 
+
+    DB_handler.base_format : DB_format object
+    DB_handler.kiokuDB : the sqlite object if user needs to perform operation not possible with current services. 
+    DB_handler.db_path : path to the sqlite database file.
+
+    for implementation example see : kioku.DB.japanese_DB_handler and unit tests. 
+
+    """    
     def __init__(self, db_path, base_format):
 
         self.kiokuDB = None     
@@ -40,6 +81,7 @@ class DB_handler(metaclass=Singleton):
             raise ValueError
         self.db_path = db_path
 
+    # TODO : gc.cllect? why not? can it annoy users? 
     def __del__(self):
 
             self.kiokuDB.commit()
@@ -48,16 +90,36 @@ class DB_handler(metaclass=Singleton):
 
     # Public method ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''' 
 
-    def enable_foreign_keys(self) : 
-        command = 'PRAGMA foreign_keys=ON;'
+    def enable_foreign_keys(self, b_ = True) :
+        """
+        enable or disable foreign keys constraint on database
+        :parameter _b : bool, True to enable, False to disable.
+        """
+
+        if b_ : val = 'ON'  else 'OFF'
+        command = 'PRAGMA foreign_keys='+val+';'
         cursor = self.kiokuDB.cursor()
         cursor.execute(command) 
         r =  cursor.fetchall()
         self.kiokuDB.commit()   
 
-    # TODO : SUPPORT INNER JOINT... Select with where statement
-    # select with INNER JOIN / LEFT JOIN STATEMENT. 
     def select(self, table, *itemToGet, **conditions):
+        """
+        fetch data of given fields <itemToGet> on table <tables>
+        conditions works as defined in class doc. 
+
+        : param table : either the table name (str) or the DB_format Table object
+        : param itemToGet : either field name (str) or DB_format Field object
+        : param conditions : keys argument as field name, values as expected value for this field.
+
+        : return : a list of tuple ordered as itemtoGet is. 
+
+        example from unit tests : 
+        
+        a = db_handler.select("vocab", "word", 'prononciation', categorie = "a_cat", tag = "c_tag")
+        a -> (('word_2', 'prononciation_2'),('word_3', 'prononciation_3'))
+
+        """
 
         itemToGet, conditions = _formatData(*itemToGet, **conditions)
         table = _getDataElementName(table)
@@ -71,6 +133,20 @@ class DB_handler(metaclass=Singleton):
         return data
 
     def list(self, table, fieldToGet, **conditions) :
+        """
+        list all values of a given field <fieldToGet> of the given table <table>
+        conditions works as defined in class doc.
+
+        : param table : either the table name (str) or the DB_format Table object
+        : param fieldToGet : either field name (str) or DB_format Field object
+        : return : tuple of all values of the field. 
+
+        example from unit tests (for japanese db handler) : 
+        categories_tuple = jpDB.list(jpDB.base_format.categories , jpDB.base_format.categories.name)
+        categories_tuple -> ('cat_1', 'cat_2', 'cat_3')        
+
+        """
+
         _tmp, conditions = _formatData(table, fieldToGet, **conditions)
         table, fieldToGet = _tmp
         data = self.select(table, fieldToGet, **conditions)
@@ -78,6 +154,21 @@ class DB_handler(metaclass=Singleton):
         return tuple(treated_data)
 
     def count(self, table, **conditions):
+        """
+        count rows in table <table> matching <conditions>
+        conditions works as defined in class doc.
+
+        : param table : either the table name (str) or the DB_format Table object
+        : param conditions : keys argument as field name, values as expected value for this field.
+        : return : number (int) of rows
+
+        example from unit tests : 
+
+        a = db_handler.count("vocab", categorie = "a_cat")
+        self.assertEqual(a, 2)
+
+        """
+
         _tmp, conditions = _formatData(table, **conditions)
         table = _tmp[0]
         r = self._req_select(table, **conditions)
@@ -87,13 +178,25 @@ class DB_handler(metaclass=Singleton):
 
         """
         add data to the given table.
+
         : parameter table : name of the table to add data to. 
         : parameter dataOrder : tuple of the name of the row 
                                 which data zill be added to, in the 
                                 order of the data of <dataList>
         : parameter dataList : list of tuple of data to add to the base
                                 in the order described in dataOrder.
+
+        example from unit tests : 
+        data = [
+            ("a_cat", "a_tag", "word_1", "prononciation_1", "a_meaning", "a_exemple"),
+            ("a_cat", "c_tag", "word_2", "prononciation_2", "a_meaning", "a_exemple"),
+            ("b_cat", "c_tag", "word_3", "prononciation_3", "b_meaning", "b_exemple"),        
+        ]
+        dataOrder = ('categorie', 'tag', 'word', 'prononciation', 'meaning', 'exemple')
+        db_handler.add("vocab", dataOrder, *data)
+
         """
+
         table = _getDataElementName(table)
         dataOrder, _ = _formatData(*dataOrder)
 
@@ -123,18 +226,47 @@ class DB_handler(metaclass=Singleton):
         self.kiokuDB.commit()
 
     def delete(self, table, **conditions):
+        """
+        delete row of a table matching conditions. 
+        conditions works as defined in class doc.
+        
+        : param table : either the table name (str) or the DB_format Table object
+        : param conditions : keys argument as field name, values as expected value for this field.
+        
+        example from unit tests :
+        db_handler.delete('vocab', tag = 'e_tag')
+
+        """
+
         _tmp, conditions = _formatData(table, **conditions)
         table = _tmp[0]
         self._req_del(table, **conditions)
         self.kiokuDB.commit()
 
     def replace(self, table, fieldReplaced, originalValue, newValue, **conditions): 
+        """
+        replace every value <originalValue> by <newValue> in the <fieldReplaced> of table <table>
+        conditions works as defined in class doc.
+
+        : param table : either the table name (str) or the DB_format Table object
+        : param fieldReplaced : either field name (str) or DB_format Field object
+        : param originalValue : value to replace, type depends on the type of the field. 
+        : param newValue : value to be replaced with, type depends on the type of the field. 
+        : param conditions : keys argument as field name, values as expected value for this field.
+
+        example from unit tests :
+        db_handler.replace('vocab', 'tag', 'c_tag', 'd_tag')
+
+        """
+
         _tmp, conditions = _formatData(table, fieldReplaced, **conditions)
         table, fieldReplaced = _tmp
         conditions[fieldReplaced] = originalValue
         self._req_update(table, fieldReplaced, newValue, **conditions)
         self.kiokuDB.commit()
 
+
+    # TODO : How different from replace method ? 
     def update(self, table, updated_field, updated_value, **conditions): 
         _tmp, conditions = _formatData(table, updated_field, **conditions)
         table, updated_field = _tmp     
@@ -142,6 +274,14 @@ class DB_handler(metaclass=Singleton):
         self.kiokuDB.commit()
 
     def executeQuery(self, queryObject) : 
+        """
+        execute sql query based on the Query object : <queryObject> 
+        the query that will be executed is queryObject()
+        before execution, will perform consistency check with its database format. 
+        : param queryObject : Query object. 
+
+        """
+
         if not self._check_query_object(queryObject) : 
             return None
         return self._req_execute_query(queryObject)
@@ -268,9 +408,15 @@ class DB_handler(metaclass=Singleton):
 
     # generate DB  ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    def generateDB(self) : 
+    def generateDB(self) :
 
-        #self.kiokuDB.close()
+        """
+        will generate sqlite database file according DB_handler.base_format at DB_handler.db_path
+        If path does not exist, exit. If sqlite file already exists. exit. 
+
+        : return : True / False according success or not of generation. 
+
+        """ 
 
         dbName = self.db_path.split('/')[-1]
         dirPath = self.db_path.split(dbName)[0]
