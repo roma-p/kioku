@@ -3,7 +3,99 @@ import kioku.DB.database_format_register as r
 log = logging.getLogger() 
 
 class DB_format():
-    """docstring for DB"""
+    """
+    
+    ****************
+
+    DB Format is used to describe the format of an SQLite database. 
+    The object can eihter be constructed by a dictionnay describing format, or created empty. 
+    DB Format can be updated after creation : tables / fields can be added / modified / removed. 
+
+    DB Format object is used by DB_Handler class to : 
+
+    - generate / maintain database
+    - check sql queries validity before execution 
+    - provide easy to use description of the database for the user.
+
+    DB Fromt object is used by Query class to  construct sql queries. 
+
+    DB Format input dictionnary format example below. 
+    certain keys of this dictionnary are fixed in kioku.DB.database_format_register: 
+    
+    - the different supported type
+    - the different supported keys 
+    - the different supported constraints
+    - couple of other stuff such as 'version', 'id' ... see database_format_registers
+
+    ****************
+
+    import kioku.DB.database_format_register as r
+
+    db_input_example = {
+        'table_1' : {
+            r.id() : True, 
+            r.date() : True, 
+            'field_1_1' : {
+                r.type() : r.type_text(), 
+                r.constraints() : (r.constraints_unique(), r.constraints_not_null())
+            },
+            'field_1_2' : {
+                r.type() : r.type_integer() 
+            }   
+        }
+        'table_2 : {
+            r.id() : True, 
+            'field_2_1' : {
+                r.type() : r.type_integer()
+            },
+            'field_2_2' : {
+                r.type() : r.type_integer()
+            },
+            r.key_foreign() : {
+                'field_2_1' : ('table_1', 'id'),
+                'field_2_2' : ('table_1', 'table_1_2') 
+            }
+        }, 
+        'version' : 1.0
+    }
+
+    ****************
+
+
+    notes on this example : 
+
+    1) setting r.id() True on a table automatically declare an index as such : 
+    
+    r.id() = {
+        r.type() : r.type_integer(), 
+        r.key() : r.key_primary(), 
+        r.constraints() : {r.constraints_autoincrement(), r.constraints_unique()}
+    }
+
+    2) setting r.date() True on a table automatically declare a date field as such : 
+    
+    r.date() = {
+        r.type =  r.type_text()
+    }
+
+    ****************
+
+    For a complete example of DB_format dictionnary, see : 
+    kioku.DB.japanese_databaseFormat.py
+
+    ****************
+
+    DB_handler automatically modified its attributes, 
+    Every table / field object data is accessible as such : 
+
+    dbf = DB_format('test', db_input_example)
+    dbf.table_1.list_field() # return every field object.
+    dbf.table_1() # calling the table itself returns its name : 'table_1'
+    dbf.table_1.field_1_1.fieldType # return 'INTEGER' (as its the value of r.type_interger())
+    dbf.table_1.field_1_2() # same behaviour as Table object : return field name : 'field_1_2'
+
+
+    """
     def __init__(self, dbFormatName, **dbFormatDict):
         
         self.dbFormatName = dbFormatName
