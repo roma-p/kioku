@@ -96,7 +96,7 @@ class DB_handler(metaclass=Singleton):
         :parameter _b : bool, True to enable, False to disable.
         """
 
-        if b_ : val = 'ON'  else 'OFF'
+        val = 'ON' if b_  else 'OFF'
         command = 'PRAGMA foreign_keys='+val+';'
         cursor = self.kiokuDB.cursor()
         cursor.execute(command) 
