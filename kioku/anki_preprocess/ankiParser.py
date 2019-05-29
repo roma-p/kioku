@@ -1,9 +1,9 @@
 import sys, os, csv 
 import sqlite3, datetime, configparser
 from shutil import copyfile
-from kioku.DB_handler import DB_handler
-import kioku.configuration as configuration
-import kioku.helpers as helpers
+from DB_handler import DB_handler
+import configuration as configuration
+import helpers as helpers
 
 
 def _parseConf(): 

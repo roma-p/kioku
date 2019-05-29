@@ -1,9 +1,9 @@
 import os, datetime, logging, configparser
 import sqlite3
 import functools
-import kioku.helpers as helpers
-import kioku.DB.database_format_register as r
-from kioku.DB.DB_format import DB_format
+import helpers as helpers
+import DB.database_format_register as r
+from DB.DB_format import DB_format
 from collections import defaultdict
 from weakref import WeakValueDictionary
 log = logging.getLogger() 

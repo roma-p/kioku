@@ -2,8 +2,8 @@ import logging, os, glob, shutil
 import csv
 from shutil import copyfile
 from tempfile import NamedTemporaryFile
-from kioku.DB.Japanese_DB_handler import Japanese_DB_handler
-import kioku.configuration as configuration
+from DB.Japanese_DB_handler import Japanese_DB_handler
+import configuration as configuration
 
 log = logging.getLogger()
 fields = ['categorie', 'tag', 'word', 'prononciation', 'meaning', 'example']

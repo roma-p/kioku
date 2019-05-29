@@ -1,5 +1,5 @@
 import logging
-import kioku.DB.database_format_register as r
+import DB.database_format_register as r
 log = logging.getLogger() 
 
 class DB_format():

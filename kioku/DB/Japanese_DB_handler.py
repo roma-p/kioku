@@ -1,9 +1,9 @@
 import logging
-from kioku.DB.DB_handler import DB_handler
-from kioku.DB import japanese_dataBaseFormat
-import kioku.configuration as configuration
-from kioku.DB.Query import Query
-from kioku.japanese import japanese_helpers
+from DB.DB_handler import DB_handler
+from DB import japanese_dataBaseFormat
+import configuration as configuration
+from DB.Query import Query
+from japanese import japanese_helpers
 
 
 log = logging.getLogger()

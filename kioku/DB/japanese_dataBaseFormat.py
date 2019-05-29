@@ -1,8 +1,8 @@
 # import database_format_register as r
 # import DB_format
 
-from kioku.DB import database_format_register as r
-from kioku.DB.DB_format import DB_format
+from DB import database_format_register as r
+from DB.DB_format import DB_format
 
 
 def get_baseFormat() : return baseFormat
