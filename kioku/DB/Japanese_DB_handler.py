@@ -123,6 +123,13 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data        
 
+    def check_categorie_existence(self, categorie_name) : 
+        if categorie_name in dict(self.list_categorie_by_usage()).keys() : 
+            return True
+        else :
+            return False
+
+
     # ADDIND DATA *************************************************************
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -158,6 +165,9 @@ class  Japanese_DB_handler(DB_handler):
 
     # data expected : 
     # ('word', 'prononciation', 'meaning','categorie','tag', 'example')
+
+    # TODO !! empty tag / categories shant be added to database. 
+
     def add_vocab(self, *vocab_list, mendatory_prononciation = True) :
         data_order = ('word', 'prononciation', 'core_prononciation',
             'meaning','example','categorie','tag')
@@ -304,6 +314,7 @@ class  Japanese_DB_handler(DB_handler):
         stat_dict['categories_number'] = self.count(self.base_format.categories)
         stat_dict['tags_number'] = self.count(self.base_format.tags)
         stat_dict['kanjis_number'] = self.count(self.base_format.kanjis)
+        stat_dict['core_p_number'] = self.count(self.base_format.core_prononciations)
         stat_dict['most_used_categories'] = self.list_categorie_by_usage(limit = row_limit)
         stat_dict['most_used_tags'] = self.list_tag_by_usage(limit = row_limit)
         stat_dict['most_used_kanjis'] = self.list_kanjis_by_usage(limit = row_limit)
