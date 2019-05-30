@@ -22,6 +22,8 @@ class  Japanese_DB_handler(DB_handler):
 
     # LISTING VOCABULARY ******************************************************
 
+    ## TODO : correct with copy paste madness. 
+
     def list_word_by_kanjis(self, kanji, *fieldToGet) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
@@ -65,14 +67,69 @@ class  Japanese_DB_handler(DB_handler):
             log.error('no field to select!')
             return False
         for field in fieldTocheck :
-            if field.parent_table != self.base_format.vocab : 
+            if field.parent_table() != self.base_format.vocab() : 
                 err_set.add(field)
         if err_set : 
             log.error('following fields are not in vocab table, cant proceed')
             for field in err_set : 
                 log.error(field())
+                log.error(field.parent_table())
             return False
         return True
+
+    # FETCHING SINGLE WORD INFO ***********************************************
+
+    def get_word_info(self, word) : 
+
+        f = self.base_format
+        field_to_get = (
+            f.vocab.word,
+            f.vocab.prononciation, 
+            f.vocab.meaning, 
+            f.vocab.example, 
+            f.vocab.date, 
+            f.core_prononciations.name, 
+            f.categories.name, 
+            f.tags.name
+            )
+        q = Query().select(f.vocab, *field_to_get)
+        q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
+        q.join_left(f.vocab.categorie, f.categories.id)
+        q.join_left(f.vocab.tag, f.tags.id)
+        q.where().equal(f.vocab.word , word)
+
+        data = self.executeQuery(q)
+
+        if not data : return None
+        else : data = data[0] # words are unique, only one instance possible. 
+
+        output = {
+            'word' : data[0],
+            'prononciation' : data[1],
+            'meaning' : data[2],
+            'example' : data[3],
+            'date' : data[4],
+            'core_prononciation' : data[5],
+            'categorie' : data[6],
+            'tag' : data[7]
+        }
+
+        output['kanjis'] = self.get_kankis_in_word(word)
+
+        return output
+
+    def get_kankis_in_word(self, word) : 
+
+        f = self.base_format
+        q = Query().select(f.vocab, f.kanjis.name)
+        q.join_left(f.vocab.id, f.word_kanjis.word_id)
+        q.join_left(f.word_kanjis.kanji_id, f.kanjis.id)
+        q.where().equal(f.vocab.word, word)
+
+        data = self.executeQuery(q)
+        kanjis_tuple = tuple([item[0] for item in data])
+
+        return kanjis_tuple
 
 
     # LISTING CRITERIUM ********************************************************
@@ -126,8 +183,22 @@ class  Japanese_DB_handler(DB_handler):
     def check_categorie_existence(self, categorie_name) : 
         if categorie_name in dict(self.list_categorie_by_usage()).keys() : 
             return True
-        else :
-            return False
+        else : return False
+
+    def check_tag_existence(self, tag_name) : 
+        if tag_name in dict(self.list_tag_by_usage()).keys() : 
+            return True
+        else : return False
+
+    def check_kanjis_existence(self, kanjis_name) : 
+        if kanjis_name in dict(self.list_kanjis_by_usage()).keys() : 
+            return True
+        else : return False
+
+    def check_core_p_existence(self, core_p_name) : 
+        if core_p_name in dict(self.list_core_p_by_usage()).keys() : 
+            return True
+        else : return False
 
 
     # ADDIND DATA *************************************************************

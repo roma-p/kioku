@@ -53,7 +53,7 @@ def stat_test():
     return str(dict(stat_dict['most_used_categories']))
 
 
-@app.route('/categories/<categorie_id>')
+@app.route('/categories_old/<categorie_id>')
 @view('categorie')
 def categorie_page(categorie_id) : 
 
@@ -70,7 +70,27 @@ def categorie_page(categorie_id) :
     output = template('categorie', name = checked_cat_id, rows = vocab_rows)
     return output
 
+@view('vocab_list')
+def render_vocab_list(vocab_list) : 
+    return template('vocab_list', rows = vocab_list)
 
-run(app, host='localhost', port=8080)
+@app.route('/categories_old/<categorie_id>')
+@view('categorie')
+def categorie_page(categorie_id) : 
+
+    jpDB = Japanese_DB_handler()
+    f = jpDB.base_format
+    checked_cat_id = categorie_id if jpDB.check_categorie_existence(categorie_id) else None
+
+    if checked_cat_id :
+        item_to_get = (f.vocab.word,f.vocab.prononciation,f.vocab.meaning,f.vocab.example)
+        vocab_rows = jpDB.list_word_by_categorie(categorie_id, *item_to_get)
+    else : 
+        vocab_rows = ()
+
+    output = template('categorie', name = checked_cat_id, rows = vocab_rows)
+    return output
+
+run(app, host='localhost', port=8081)
 
 
