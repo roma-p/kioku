@@ -73,7 +73,6 @@ class  Japanese_DB_handler(DB_handler):
             log.error('following fields are not in vocab table, cant proceed')
             for field in err_set : 
                 log.error(field())
-                log.error(field.parent_table())
             return False
         return True
 

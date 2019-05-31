@@ -6,7 +6,4 @@ def get_vocab_format():
     if not vocab_format :
         f = Japanese_DB_handler().base_format
         vocab_format = (f.vocab.word,f.vocab.prononciation,f.vocab.meaning,f.vocab.example)
-
-    else : 
-        print(vocab_format)
     return vocab_format

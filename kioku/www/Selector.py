@@ -6,12 +6,13 @@ from www import www_config
 log = logging.getLogger()
 
 class Selector(abc.ABC) : 
-    selector_id = None
+    selector_type = None
     sub_url = None
+    parent_url = 'selectors'
 
-    def __call__(self) : return self.selector_id
+    def __call__(self) : return self.selector_type
 
-    # return : - tuple of tuple (selector_id : number of words associated)
+    # return : - tuple of tuple (selector_type : number of words associated)
     #          - total number selectors
     @abc.abstractmethod    
     def get_selector_list_data(): 
@@ -24,9 +25,25 @@ class Selector(abc.ABC) :
     def get_vocab_from_selector(): 
         return
 
+    # generate the sub url to a selector type list. 
+    # eg : /selectors/categories
+    @classmethod
+    def gen_url_to_selector_type(cls) : 
+        return '/' + Selector.parent_url + '/' + cls.sub_url
+
+    # generate the sub url to a precise selector id
+    # eg : a precise categorie
+    # will be like : /selectors/categories/time
+
+    #TODO  store url in static so not generated every time. 
+    @classmethod
+    def gen_url_to_selector_id(cls, selector_id) :
+        return '/' + Selector.parent_url + '/' + cls.sub_url + '/' + selector_id
+
+
 
 class Categorie(Selector) : 
-    selector_id = 'categorie'
+    selector_type = 'categorie'
     sub_url = 'categories'    
 
     def get_selector_list_data() : 
@@ -45,7 +62,7 @@ class Categorie(Selector) :
 
 
 class Tag(Selector) : 
-    selector_id = 'tag'
+    selector_type = 'tag'
     sub_url = 'tags'    
 
     def get_selector_list_data() : 
@@ -67,7 +84,7 @@ class Tag(Selector) :
 
 
 class Kanjis(Selector) : 
-    selector_id = 'kanji'
+    selector_type = 'kanji'
     sub_url = 'kanjis'    
 
     def get_selector_list_data() : 
@@ -81,14 +98,12 @@ class Kanjis(Selector) :
         selector_id = selector_id if jpDB.check_kanjis_existence(selector_id) else None
         if selector_id : 
             item_to_get = www_config.get_vocab_format()
-            log.error(selector_id)
-            log.error(item_to_get)
             vocab_list = jpDB.list_word_by_kanjis(selector_id, *item_to_get)
             return vocab_list
 
 
 class Core_P(Selector) : 
-    selector_id = 'core_prononciation'
+    selector_type = 'core_prononciation'
     sub_url = 'core_prononciations'    
 
     def get_selector_list_data() : 

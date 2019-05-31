@@ -4,7 +4,7 @@
 %for selector_id in selector_id_list:
     <tr>
     %for col in selector_id:
-        <td>{{col}}</td>
+        <td>{{!col}}</td>
     %end
     </tr>
 %end

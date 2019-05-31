@@ -3,7 +3,7 @@
 %for vocab in vocab_list:
     <tr>
     %for col in vocab:
-        <td>{{col}}</td>
+        <td>{{!col}}</td>
     %end
     </tr>
 %end
