@@ -4,6 +4,7 @@ from DB import japanese_dataBaseFormat
 import configuration as configuration
 from DB.Query import Query
 from japanese import japanese_helpers
+from www.SearchResult import SearchResult
 
 
 log = logging.getLogger()
@@ -184,6 +185,9 @@ class  Japanese_DB_handler(DB_handler):
             return True
         else : return False
 
+    # CHECKING EXISTENCE ******************************************************
+
+
     def check_tag_existence(self, tag_name) : 
         if tag_name in dict(self.list_tag_by_usage()).keys() : 
             return True
@@ -199,6 +203,242 @@ class  Japanese_DB_handler(DB_handler):
             return True
         else : return False
 
+    def check_word_existence(self, word) : 
+        if not japanese_helpers.is_word_japanese(word) : return False
+        q = Query().select(self.base_format.vocab, self.base_format.vocab.word)
+        q.where().equal(self.base_format.vocab.word, word)
+        word = self.executeQuery(queryObject)
+        return True if word else False
+
+
+    def list_vocab_by_approximative_field(self, key_field, key_value, *field_to_get) : 
+        """
+        retrieve data from vocab table, where its key_field IS or CONTAINS key_value
+        (but does not auto correct typo, yet)
+        returns fields listed in field_to_get
+        data are ordered as such : first the perfect match if it exsists
+        then data ordered by number of character in addition to key_value
+
+        nota : will not checked for language coherence : 
+            - if key_field is 'word' and 'key_value' is in english, 
+            will return empty without raising error. 
+            - if key_field is 'prononciation' but key_value contains kanjis, 
+            will return empty without raising error. 
+        so to avoid useless request on database, better check key_field and key_value
+        before using this method. s
+
+        : param key_field : a Field object of DB_format, from Japanese_DB_handler.base_format.vocab
+        : param key_value : the value of key_field you want to retrieve. 
+        : paran *field_to_get : list of Field object of DB_format you want to retrieve, 
+                                fields has to be from Japanese_DB_handler.base_format.vocab
+        : return : tuple of data fetched that match key_value, sorted as explained before. 
+
+        """
+
+        f = self.base_format
+
+
+        # TODO : WARNING : what happens if we put field to get twice ? 
+        # SQL ? IS THERE FIELDS somewhere ?
+
+        # adding key_field to field_to_get 
+        # so field_to_get index in data fetched will be O
+        all_field_to_get = (key_field, *field_to_get)
+
+
+        # 0) checks : 
+        # -----------
+        # - key_field and field_to_get are fields of Japanese_DB_handler.base_format.vocab
+
+
+        wrong_field_list = [field for field in all_field_to_get 
+            if field.parent_table() != f.vocab()]
+
+        if wrong_field_list : 
+            log.error('trying to get field that does not exists in ' + f.vocab() + ':')
+            for field in wrong_field_list : 
+                log.error(f.vocab() + ' has no field : ' + str(field))
+            return None
+
+
+        # 1) selecting perfect match : 
+        # ----------------------------
+        q = Query().select(f.vocab, *all_field_to_get)
+        q.where().equal(key_field, key_value)
+        data = self.executeQuery(queryObject)
+        perfect_match = data[0] if data else None
+
+
+        # 2) selecting 'like' : 
+        # ---------------------
+
+        q = Query().select(f.vocab, *all_field_to_get)
+        q.where().like(key_field, '%'+key_value+'%')
+        q.and_().not_equal(key_field, key_value)
+        data = self.executeQuery(queryObject)
+        approximations = data if data else None
+
+
+        # 3) sorting / presenting data : 
+        # ------------------------------
+
+        if perfect_match : perfect_match[1:]
+
+        # sorting data
+        approximations.sort(key = lambda x:len(x[0]))
+
+        # removing first field (key_field added at beguining of method)
+        approximations = [data[1:] for data in approximations]
+
+
+        return perfect_match, tuple(approximations)
+
+
+    # SEARCHING ***************************************************************
+
+    # input -> string without space. OHTERWISE return error for the moment
+    # !!! if single kanjis different behaviour : list words with kanjis.  
+
+    def search_web_app(input, *field_to_get) : 
+        _input = Japanese_DB_handler._process_search_input(input)
+        if not _input : return None
+
+        if len(_input) == 1 and japanese_helpers.is_kanjis(_input) : 
+            search_result = self.search_kanji(_input)
+        else : 
+            search_result = self.search_normal(_input)
+        # if one kanjis : search by kanjis 
+        # if egnlish or japanese : nothing to do, can't proceed through that.
+        # if more thant one kanjis character, words and stuff.
+
+    def search_kanji(input, *field_to_get) : pass
+    
+    def search_normal(input, *field_to_get) : 
+
+        word_output = self.search_word(input, *field_to_get)
+        kanji_output = self.search_kanjis_in_words(input, *field_to_get)
+        categorie_output = self.search_categorie(input, *field_to_get)
+        tag_output = self.search_tag(input, *field_to_get)
+        core_p_output = self.search_core_p(input, *field_to_get)
+
+        SearchResult(input)
+
+        # if any perfect match as a word, we display it first. 
+        for field_name in [f.vocab.word(), f.vocab.prononciation(), f.vocab.meaning()] : 
+            perfect_match, approximation_list =  word_output[field_name]
+            if perfect_match : 
+                pass
+
+
+    def search_word(input, *field_to_get) :
+        """
+        TODO 
+        """
+        f = self.base_format
+
+        _input = Japanese_DB_handler._process_search_input(input)
+        if not _input : return None
+
+        output = {
+        f.vocab.word() : (), 
+        f.vocab.prononciation() : (), 
+        f.vocab.meaning() : (),
+        }
+
+        is_japanese = japanese_helpers.is_word_japanese(_input)
+        is_kana = False if not is_japanese else japanese_helpers.is_word_kana(_input)
+
+        if is_japanese : 
+            output[f.vocab.word()] = self.list_vocab_by_approximative_field(
+                f.vocab.word, _input, *field_to_get)
+        if is_kana : 
+            output[f.vocab.prononciation()] = self.list_vocab_by_approximative_field(
+                f.vocab.prononciation, _input, *field_to_get)
+        output[f.vocab.meaning()] = self.list_vocab_by_approximative_field(
+                f.vocab.meaning, _input, *field_to_get)
+
+        return output
+
+    def search_kanjis_in_words(input) : 
+        """
+        execute _process_search_input to check input. 
+        if japanese : will return every kanji in the word if those exists in the database. 
+        """
+        _input = Japanese_DB_handler._process_search_input(input)
+        if not _input or not japanese_helpers.is_word_japanese(_input) : return None
+
+        kanjis_in_word = japanese_helpers.list_kanjis(word)
+        kanjis_in_db = [kanji for kanji in kanjis_in_word if self.check_kanjis_existence(kanji)]
+
+        diff = set(kanjis_in_word) - set(kanjis_in_db)
+        if diff : 
+            log.error('following kanjis not found in DB : ')
+            for kanji in diff : 
+                log.error(kanji)
+        return kanjis_in_db
+
+    def search_categorie(input) : 
+        """
+        execute _process_search_input to check input. 
+        search categorie corresponding to that input, 
+        but only look for categories beeing exactly equalt to input 
+        categories can be either in english / french / japanese. 
+        """
+        _input = Japanese_DB_handler._process_search_input(input)
+        if not _input : return None
+
+        f = self.base_format
+        q = Query().select(f.categories, f.categories.name)
+        q.where().equal(f.categories.name, _input)
+        return self.executeQuery(q)
+
+    def search_tag(input) :
+        """
+        execute _process_search_input to check input. 
+        search tag corresponding to that input, 
+        but only look for tags beeing exactly equalt to input 
+        tags can be either in english / french / japanese. 
+        """
+
+        _input = Japanese_DB_handler._process_search_input(input)
+        if not _input : return None
+
+        f = self.base_format
+        q = Query().select(f.tags, f.tags.name)
+        q.where().equal(f.tags.name, _input)
+        return self.executeQuery(q)
+
+    def search_core_p(input) : 
+        """
+        execute _process_search_input to check input. 
+        if kana, generate core_prononciation and list words with that core_p
+        if just one word affected to that core_p, not relevant to return it, return None
+        else return the core prononciation. 
+        """
+        _input = Japanese_DB_handler._process_search_input(input)
+        if not _input or not japanese_helpers.is_word_kana(_input) : return None
+
+        core_p = japanese_helpers.gen_core_prononciation(_input)
+        if not core_p : return None
+
+        word_list = list_word_by_core_prononciation(core_p, self.base_format.vocab.word)
+        return core_p if len(word_list) > 1 else None
+
+
+
+    @staticmethod
+    def _process_search_input(input) :
+        """
+        checking consistency of input recevied from search field
+        for now : only accept one word as input, (will delete leading and trailing spaces). 
+        TODO : a cache !!!
+        """
+        _input = strip(input)
+        if ' ' in _input : 
+            log.error('at the moment, search feature only accept ONE word')
+            return None
+        else : 
+            return _input
 
     # ADDIND DATA *************************************************************
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -390,24 +630,6 @@ class  Japanese_DB_handler(DB_handler):
         stat_dict['most_used_kanjis'] = self.list_kanjis_by_usage(limit = row_limit)
         stat_dict['most_used_core_p'] = self.list_core_p_by_usage(limit = row_limit)
         return stat_dict
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

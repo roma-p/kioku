@@ -95,6 +95,7 @@ class Query() :
         self._sectionList.append(str_r)
         return self
 
+    # cant use 'in' as it is protected by Python
     def in_(self, field, valuesTuple) :
         self.update_shall_exist(field) 
         field_str = _format_string_from_fieldObject(field)
@@ -107,6 +108,11 @@ class Query() :
         field_str = _format_string_from_fieldObject(field)
         str_query = field_str + ' IS NULL'        
         self._sectionList.append(str_query)
+        return self
+
+    def like(self, field, value) : 
+        str_r = self._condition("LIKE", field, value)
+        self._sectionList.append(str_r)
         return self
 
     def _condition(self, conditionner, field, value) :

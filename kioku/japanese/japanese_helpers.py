@@ -26,7 +26,12 @@ def is_word_kana(word) :
 	for character in word : 
 		if not is_kana(character) : return False
 	return True
-	
+
+def is_word_japanese(word) : 
+	if not word : return False
+	for character in word : 
+		if not is_cjk(character) : return False
+	return True
 
 def unicode_range_hiragana() : return 12352, 12447
 def unicode_range_katakana() : return 12448, 12543
