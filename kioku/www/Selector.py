@@ -1,6 +1,6 @@
 import abc
 import logging
-from DB.Japanese_DB_handler import Japanese_DB_handler
+from japanese.Japanese_DB_Handler import Japanese_DB_handler
 from www import www_config
 
 log = logging.getLogger()

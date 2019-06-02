@@ -81,7 +81,7 @@ class DB_format():
     ****************
 
     For a complete example of DB_format dictionnary, see : 
-    kioku.DB.japanese_databaseFormat.py
+    kioku.japanese.japanese_databaseFormat.py
 
     ****************
 

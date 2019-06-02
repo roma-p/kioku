@@ -1,6 +1,6 @@
 import csv, glob, logging, os
-from kioku.DB.Japanese_DB_handler import Japanese_DB_handler
-from kioku.DB import japanese_dataBaseFormat
+from kioku.japanese.Japanese_DB_Handler import Japanese_DB_handler
+from kioku.japanese import japanese_databaseFormat
 import kioku.configuration as configuration
 log = logging.getLogger()
 

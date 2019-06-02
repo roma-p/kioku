@@ -1,7 +1,7 @@
 import unittest, os, gc, logging
 from context import kioku
-from kioku.DB.Japanese_DB_handler import Japanese_DB_handler
-from kioku.DB import japanese_dataBaseFormat
+from kioku.japanese.Japanese_DB_Handler import Japanese_DB_handler
+from kioku.japanese import japanese_databaseFormat
 
 log = logging.getLogger()
 

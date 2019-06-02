@@ -2,7 +2,7 @@ import logging, os, glob, shutil
 import csv
 from shutil import copyfile
 from tempfile import NamedTemporaryFile
-from DB.Japanese_DB_handler import Japanese_DB_handler
+from japanese.Japanese_DB_Handler import Japanese_DB_handler
 import configuration as configuration
 
 log = logging.getLogger()
