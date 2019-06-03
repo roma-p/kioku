@@ -2,7 +2,7 @@ import unittest, os, gc, glob, logging
 from context import kioku
 from shutil import copyfile
 import kioku.db_update as db_update
-from kioku.DB_handler import DB_handler
+from kioku.DB.DB_handler import DB_handler
 import kioku.configuration as configuration
 
 logging.basicConfig()

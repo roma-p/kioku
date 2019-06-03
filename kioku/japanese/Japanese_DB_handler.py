@@ -1,6 +1,6 @@
 import logging
 from DB.DB_handler import DB_handler
-from japanese import japanese_databaseFormat
+from japanese import japanese_dataBaseFormat
 import configuration as configuration
 from DB.Query import Query
 from japanese import japanese_helpers

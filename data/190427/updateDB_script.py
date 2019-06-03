@@ -1,7 +1,7 @@
 import unittest, os, gc, logging
 from context import kioku
 from kioku import db_update
-from kioku.japanese.Japanese_DB_Handler import Japanese_DB_handler
+from kioku.japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
 
 csv_dir = 'data/190427/patched_2/'
 

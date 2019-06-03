@@ -1,9 +1,11 @@
 import unittest, os, gc, logging
 from context import kioku
-from kioku.japanese.Japanese_DB_Handler import Japanese_DB_handler
-from kioku.japanese import japanese_databaseFormat
+from kioku.japanese.Japanese_DB_handler import Japanese_DB_handler
+from kioku.japanese import japanese_dataBaseFormat
 
+logging.basicConfig()
 log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 test_dir = 'test/jp_db/'
 japanese_db_path = test_dir + 'japanese_db.sqlite'
@@ -36,6 +38,7 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         return Japanese_DB_handler()
 
     def setUp(self) : 
+
 
         db_path = japanese_db_path
         base_format = japanese_dataBaseFormat.get_baseFormat()

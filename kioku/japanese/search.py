@@ -1,5 +1,5 @@
 import logging
-from japanese.Japanese_DB_Handler import Japanese_DB_handler
+from japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
 from japanese.SearchResult import WordSearchResult, WordListSearchResult, SelectorResult, SearchResult
 
 _jpdb_object = None

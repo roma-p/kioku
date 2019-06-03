@@ -1,9 +1,11 @@
 import csv, glob, logging, os
-from kioku.japanese.Japanese_DB_Handler import Japanese_DB_handler
-from kioku.japanese import japanese_databaseFormat
+from kioku.japanese.Japanese_DB_handler import Japanese_DB_handler
+from kioku.japanese import japanese_dataBaseFormat
 import kioku.configuration as configuration
-log = logging.getLogger()
 
+logging.basicConfig()
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
 
 def add_vocab_fromCsv_dir(csv_dir, add_categories = False, add_tags = False) : 
 

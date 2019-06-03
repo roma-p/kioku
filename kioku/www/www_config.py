@@ -1,4 +1,4 @@
-from japanese.Japanese_DB_Handler import Japanese_DB_handler
+from japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
 
 vocab_format = None
 def get_vocab_format(): 
