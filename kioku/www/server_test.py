@@ -1,5 +1,5 @@
 from bottle import Bottle, run, view, template
-from japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
+from japanese.Japanese_DB_handler import Japanese_DB_handler
 import logging
 
 logging.basicConfig()

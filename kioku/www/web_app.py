@@ -1,6 +1,6 @@
 import logging
 from bottle import Bottle, run, view, template
-from japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
+from japanese.Japanese_DB_handler import Japanese_DB_handler
 from Selector import Categorie, Tag, Kanjis, Core_P
 from Word import Word
 

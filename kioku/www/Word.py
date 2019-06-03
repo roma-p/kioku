@@ -1,6 +1,6 @@
 import logging
 from www import www_config
-from japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
+from japanese.Japanese_DB_handler import Japanese_DB_handler
 
 class Word() : 
     parent_url = 'words'
