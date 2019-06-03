@@ -11,6 +11,15 @@ log = logging.getLogger()
 
 class Singleton(type) :
 
+    # TODO : get rid of weak ref ! 
+    # in tests, monkey patch without instantiating and 
+    # there will be no need to delete it. 
+
+    # NOTA : always import for kioku for metatables puprouse
+    # singleton doenst work if you don't import from the same root path. 
+    # go figure...
+    
+
     _instances = WeakValueDictionary()
 
     def __call__(cls, *args, **kwargs):
@@ -77,13 +86,14 @@ class DB_handler(metaclass=Singleton):
         try : 
             self.base_format = DB_format('format', **base_format)
         except ValueError: 
+            self.kiokuDB = None
             log.error('error in DB format : could not init DB_handler')
             raise ValueError
         self.db_path = db_path
 
     # TODO : gc.cllect? why not? can it annoy users? 
     def __del__(self):
-
+        if self.kiokuDB : 
             self.kiokuDB.commit()
             self.kiokuDB.close()
             del(self.kiokuDB)

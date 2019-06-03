@@ -233,8 +233,8 @@ class  Japanese_DB_handler(DB_handler):
         # ----------------------------
         q = Query().select(f.vocab, *all_field_to_get)
         q.where().equal(key_field, key_value)
-        data = self.executeQuery(queryObject)
-        perfect_matches = data if data else None
+        data = self.executeQuery(q)
+        perfect_matches = list(data) if data else None
 
 
         # 2) selecting 'like' : 
@@ -243,8 +243,8 @@ class  Japanese_DB_handler(DB_handler):
         q = Query().select(f.vocab, *all_field_to_get)
         q.where().like(key_field, '%'+key_value+'%')
         q.and_().not_equal(key_field, key_value)
-        data = self.executeQuery(queryObject)
-        approximations = data if data else None
+        data = self.executeQuery(q)
+        approximations = list(data) if data else None
 
 
         # 3) sorting / presenting data : 
@@ -259,7 +259,7 @@ class  Japanese_DB_handler(DB_handler):
         approximations = [data[1:] for data in approximations]
 
 
-        return perfect_matches, tuple(approximations)
+        return tuple(perfect_matches), tuple(approximations)
 
     # CHECKING EXISTENCE ******************************************************
 

@@ -111,7 +111,7 @@ class Query() :
         return self
 
     def like(self, field, value) : 
-        str_r = self._condition("LIKE", field, value)
+        str_r = self._condition(" LIKE", field, value)
         self._sectionList.append(str_r)
         return self
 

@@ -10,6 +10,7 @@ log.setLevel(logging.DEBUG)
 test_dir = 'test/jp_db/'
 japanese_db_path = test_dir + 'japanese_db.sqlite'
 correct_DB = test_dir + 'correct_db.sqlite'
+approximation_db = test_dir + 'approximation_db.sqlite'
 
 japanese_vocab = [
     ('ふと',None,'accidentellement,  par hasard,  soudainement','suddenly','short',None),
@@ -38,8 +39,6 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         return Japanese_DB_handler()
 
     def setUp(self) : 
-
-
         db_path = japanese_db_path
         base_format = japanese_dataBaseFormat.get_baseFormat()
         jpDB = self.monkey_patch_JPDB_init(db_path, base_format)
@@ -53,10 +52,9 @@ class TestJapanese_DB_handler(unittest.TestCase) :
             if os.path.exists(path) :
                 os.remove(path)
 
-    def connect_to_correct_DB(self) : 
+    def connect_to_correct_DB(self, db_path = correct_DB) : 
         jpDB = Japanese_DB_handler()
         del(jpDB)
-        db_path = correct_DB
         base_format = japanese_dataBaseFormat.get_baseFormat()
         return self.monkey_patch_JPDB_init(db_path, base_format)
 
@@ -154,6 +152,15 @@ class TestJapanese_DB_handler(unittest.TestCase) :
         jpDB = self.connect_to_correct_DB()
         a = jpDB.list_kanjis_by_usage()
 
+    def test_approximation(self) : 
+        jpDB = self.connect_to_correct_DB(approximation_db)
+        perfect_matches, approximations = jpDB.list_vocab_by_approximative_field(jpDB.base_format.vocab.word , '瀬', jpDB.base_format.vocab.word, jpDB.base_format.vocab.prononciation, jpDB.base_format.vocab.meaning)
+        self.assertEqual(perfect_matches, (('瀬', 'せ', 'courant, rapides, torrent'),))
+        self.assertEqual(approximations, (('遣る瀬無い', 'やるせない', 'helpless, cheerless, downhearted'),))
+
+        perfect_matches, approximations = jpDB.list_vocab_by_approximative_field(jpDB.base_format.vocab.prononciation , 'しん', jpDB.base_format.vocab.word, jpDB.base_format.vocab.prononciation, jpDB.base_format.vocab.meaning)
+        self.assertEqual(perfect_matches, (('芯', 'しん', 'cœur,  mine (crayon),  noyau'),))
+        self.assertEqual(len(approximations), 27)
 
 if __name__ == '__main__': unittest.main()
 

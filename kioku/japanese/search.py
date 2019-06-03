@@ -1,6 +1,9 @@
 import logging
-from japanese.japanese.Japanese_DB_handler import Japanese_DB_handler
+from DB.Query import Query
+from kioku.japanese.Japanese_DB_handler import Japanese_DB_handler
 from japanese.SearchResult import WordSearchResult, WordListSearchResult, SelectorResult, SearchResult
+
+log = logging.getLogger()
 
 _jpdb_object = None
 def _jpdb() : 
@@ -13,7 +16,7 @@ def _jpdb() :
 # input -> string without space. OHTERWISE return error for the moment
 # !!! if single kanjis different behaviour : list words with kanjis.  
 
-def search_web_app(input, *field_to_get) :
+def search_web_app(input) :
     j = _jpdb()
     _input = Japanese_DB_handler._process_search_input(input)
     if not _input : return None
@@ -27,17 +30,33 @@ def search_web_app(input, *field_to_get) :
     # if egnlish or japanese : nothing to do, can't proceed through that.
     # if more thant one kanjis character, words and stuff.
 
+
+# search word first !!!!
 def search_kanji(input) :
     j = _jpdb() 
+    # print(j.base_format)
     f = j.base_format
-    field_to_get = (f.vocab.word, f.vocab._prononciation, f.vocab.meaning)
+    vocab_field_to_get = (f.vocab.word, f.vocab.prononciation, f.vocab.meaning)
     search_result_list = []
-    kanji_existence = j.check_kanjis_existence(kanji)
+
+    q = Query().select(f.vocab, *vocab_field_to_get)
+    q.where().equal(f.vocab.word, input)
+    data = j.executeQuery(q)
+    perfect_matches = list(data) if data else None
+    
+    if perfect_matches : 
+        for match in perfect_matches : 
+            word, prononciation, meaning  = match
+            # if there is a word which consists of a single kanji, display it first.
+            search_result_list.append(WordSearchResult(word, prononciation, meaning = 0))
+
+    kanji_existence = j.check_kanjis_existence(input)
     if kanji_existence : 
-        # if kanji exists, display it first. 
-        search_result_list.append(SelectorResult('kanji', kanji, pertinence = 0))
-    word_list = j.list_word_by_kanjis(input, field_to_get)
-    search_result_list.append(WordListSearchResult(word_list, pertinence = 1))
+        # if kanji exists, display it right after pottential word in one kanji. 
+        search_result_list.append(SelectorResult('kanji', input, pertinence = 1))
+    word_list = j.list_word_by_kanjis(input, *vocab_field_to_get)
+    # and belowm list of words using this kanjis
+    search_result_list.append(WordListSearchResult(*word_list, pertinence = 2))
     return search_result_list
 
 def search_normal(input) : 
@@ -65,7 +84,7 @@ def search_word(input) :
     """
     j = _jpdb()
     f = j.base_format
-    field_to_get = (f.vocab.word, f.vocab._prononciation, f.vocab.meaning)
+    field_to_get = (f.vocab.word, f.vocab.prononciation, f.vocab.meaning)
     _input = Japanese_DB_handler._process_search_input(input)
     if not _input : return None
     _tmp_output = {
@@ -93,8 +112,8 @@ def search_word(input) :
     searchResultsList = []
     for _perfect_match_data in _perfect_match_list : 
         word, prononciation, meaning = _perfect_match_data
-        perfect_match_list.append(WordSearchResult(word, prononciation, meaning *kanjis_in_word)
-    searchResultsList.append(WordListSearchResult(_approximation_data_list)))
+        perfect_match_list.append(WordSearchResult(word, prononciation, meaning *kanjis_in_word))
+    searchResultsList.append(WordListSearchResult(*_approximation_data_list))
     return searchResultsList
 
 def search_kanjis_in_words(input) : 
