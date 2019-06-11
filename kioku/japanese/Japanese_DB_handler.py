@@ -24,40 +24,44 @@ class  Japanese_DB_handler(DB_handler):
 
     ## TODO : correct with copy paste madness. 
 
-    def list_word_by_kanjis(self, kanji, *fieldToGet) : 
+    def list_word_by_kanjis(self, kanji, *fieldToGet, limit = None) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.id, f.word_kanjis.word_id)
         q.join_left(f.word_kanjis.kanji_id , f.kanjis.id)
         q.where().equal(f.kanjis.name, kanji)
+        if limit : q.limit(limit)
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_core_prononciation(self, core_p, *fieldToGet) : 
+    def list_word_by_core_prononciation(self, core_p, *fieldToGet, limit = None) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
         q.where().equal(f.core_prononciations.name, core_p)
+        if limit : q.limit(limit)
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_categorie(self, categorie_name, *fieldToGet) : 
+    def list_word_by_categorie(self, categorie_name, *fieldToGet, limit = None) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.categorie, f.categories.id)
         q.where().equal(f.categories.name, categorie_name)
+        if limit : q.limit(limit)
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_tag(self, tag_name, *fieldToGet) : 
+    def list_word_by_tag(self, tag_name, *fieldToGet, limit = None) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.tag, f.tags.id)
         q.where().equal(f.tags.name, tag_name)
+        if limit : q.limit(limit)
         data = self.executeQuery(q)
         return data
 
@@ -240,6 +244,10 @@ class  Japanese_DB_handler(DB_handler):
         # 2) selecting 'like' : 
         # ---------------------
 
+        # TODO : first check key_value + %
+        # then search % keyval % but not like key val & 
+        # mot commancant par ce caractere la, mieux aue tout grouper independamment de sa position . 
+
         q = Query().select(f.vocab, *all_field_to_get)
         q.where().like(key_field, '%'+key_value+'%')
         q.and_().not_equal(key_field, key_value)
@@ -250,16 +258,16 @@ class  Japanese_DB_handler(DB_handler):
         # 3) sorting / presenting data : 
         # ------------------------------
 
-        if perfect_matches : perfect_matches = [data[1:] for data in perfect_matches]
+        if perfect_matches : perfect_matches = tuple([data[1:] for data in perfect_matches])
 
         # sorting data
-        approximations.sort(key = lambda x:len(x[0]))
+        if approximations : approximations.sort(key = lambda x:len(x[0]))
 
         # removing first field (key_field added at beguining of method)
-        approximations = [data[1:] for data in approximations]
+        approximations = tuple([data[1:] for data in approximations]) if approximations else None
 
 
-        return tuple(perfect_matches), tuple(approximations)
+        return perfect_matches, approximations
 
     # CHECKING EXISTENCE ******************************************************
 

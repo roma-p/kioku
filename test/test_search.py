@@ -36,9 +36,21 @@ class TestSearch(unittest.TestCase) :
 
     def test_kanji(self) : 
         print('meeeerde')
-        print(Japanese_DB_handler().base_format.vocab())
-        print(Japanese_DB_handler())
         a = search.search_kanji('瀬')
+
+    def test_search_normal(self) : 
+        a = search.search_normal('ない')
+        # print(a)
+        a = search.search_normal('つまらない')
+        # print(a)
+        a = search.search_normal('time')
+        # print(a)
+        a = search.search_normal('short')
+        # print(a)
+
+    def test_search_web_app(self): 
+        a = search.search_web_app('瀬')
+        print(a)
 
 if __name__ == '__main__': unittest.main()
 

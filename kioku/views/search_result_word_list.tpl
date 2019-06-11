@@ -1,9 +1,5 @@
 <table>
-<tr>
-%for row in vocab_format: 
-	<th>{{row}}</th>
-%end
-</tr>
+<tr><th>word</th><th>prononciation</th><th>meaning</th><th>
 %for vocab in vocab_list:
     <tr>
     %for col in vocab:
