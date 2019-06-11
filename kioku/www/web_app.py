@@ -190,9 +190,6 @@ def search_result_word_list(input, wordListSearchResult) :
 def search_result_selector(input, selectorSearchResult) :
     selector = search_type_to_selector[selectorSearchResult.selector_type]
     linked_selector = create_selector_id_link(selector, input)
-    print('oooooooooo')
-    print(selectorSearchResult.word_examples)
-    print('oooooooooo')
     examples_data = [create_word_id_link(word) for word in selectorSearchResult.word_examples]
     data = search_result_header(selectorSearchResult.selector_type, linked_selector, examples_list = examples_data)
     # TODO : MISSING STUFF
