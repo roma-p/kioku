@@ -1,0 +1,101 @@
+categorie	tag	word	prononciation	meaning	example
+	expression	やっちゃう		to have (esp. sex, food, etc.)	
+	short	やっぱり		aussi, en fin de compte, finalement, malgré tout	
+	short	やら		such things as A and B, A and B and so on	
+speed	short	ゆっくり		Lentement	
+shape	short	らしい		Il semble que Suffixe: -ish -like	
+interact	double	イライラさせる		to get beneath someone's skin, to in someone's hair, to irritate	
+noun	katagana	イラクサ		Orties (刺草)	
+noun	katagana	イラスト		illustration	
+	double	カチカチ		cliquetis, durci (comme de la pierre), tic-tac	
+	double	ガチガチ		chattering (teeth)と (frozen, worried) stiffな	
+noun		クモの巣	クモのす	spider web,	
+noun		コクリコ		Coquelicots	
+interact	expression	コネがない		Avoir des connexions (réseaux)	
+noun	katagana	コンサート		Concert	
+noun	katagana	コンビニ		Konbini	
+movement	katagana	ゴロゴロする	ごろごろ	Glander	
+	double	スイスイ		(swim, work) smoothly, unhindered	
+cloth	katagana	ズボン		Pantalon	
+judgment	katagana	ズレる		glisser	ズレた人
+movement	katagana	タイプする		Taper a la machine, l’ordinateur	
+interact	katagana	タッチする		Toucher à, se mêler	
+interact	katagana	デエトする		Sortir ac qqun	
+movement	katagana	デザインする		Concevoir Faire le design	
+animal	katagana	ネズミ		Souris	
+food	katagana	ハチミツ		Miel	
+	ERROR	ハチミツ		Jouer au piano	
+	double	ペラペラ		Fluent, maitrise	
+food	katagana	ミカン		mandarine	
+interact	katagana	メーリ		Mail	
+shape	double	モフモフ		soft to the touch (e.g. fur, feathers),  fluffy	
+judgment	katagana	リアル		real, realistic, true to life	
+noun	katagana	レポート		Rapport, compte rendu	
+feeling	double	ワクワク		être excité, être nerveux	
+	expression	一体全体	いったいぜんたい	....The heck? .... in the world?  ... oneath ( who on earth, what on earth...)	
+quantity		一億	いちおく	cent million	
+	expression	一億総懺悔	いちおくそうざんげ	national confession of Japanese war guilt	
+time		一日中	いちにちじゅう	Toute la journée	
+time		一晩中	ひとばんじゅう	(Pendant) Toute la nuit	
+quantity		一歩	いっぽ	Un pas Level, stage small degree, small amount	
+time		一瞬	いっしゅん	un instant, un moment	
+time		一箇月 一ヶ月	いっかげつ	Compteur d’items.	
+language		丁寧	ていねい	Aimable attentif Poli...	
+movement	TODO	上り坂	のぼりざか	amélioration, ascension, progression	道は上り坂になってその村に出る。 
+screen		上映	じょうえい	projection (sur écran)	
+cloth		上着	うわぎ	Veste, tunique, manteaux Vetement du dessus	
+movement	down	下がる	さがる	Baisser, reculer, tomber	
+movement	down	下がる	さがる	baisser,  pendre, reculer,  se retirer, tomber	
+	ERROR	下り坂	丘は川のほうまで下り坂になっています。 くだりざか		
+judgment		下手	へた	Pas bon à (inverse de 上手)	
+school		下校	げこう	coming home from school,  end of school day	
+cloth		下着	したぎ	sous-vêtements	
+judgment		不便	ふべん	Pas pratique Incommode	
+judgment		不可能	ふかのう	Impossible	
+accomplish		不合格	ふごうかく	échec (examen)refus, élimination,  disqualification, inaptitude	
+feeling		不安	ふあん	agitation, anxiété, inquiétude	
+judgment		不思議	ふしぎ	étrange, extraordinaire, inexplicable, merveilleux, miraculeux	
+suddenly		不意に	ふいに	soudain,  de manière inattendue	
+judgment		不明	ふめい	unknown, obscure, indistinct, uncertain, ambiguous	
+judgment		不祥事	ふしょうじ	scandale	
+accomplish		与えられた使命	あたえられたしめい	Mission donnée	
+interact		世の中	よのなか	society,  the world,  the times	
+interact		世話	せわ	Aide, assistance	
+location		丘	おか	Colline	
+body		両手	りょうて	(with) both hands approbation	
+judgment	double	中々	なかなか	Difficilement, avoir difficulté	
+location		中央駅	ちゅうおおえき	Gare centrale	
+location		中心街	ちゅうしんがい	Centre ville	
+shape		丸い	まるい	Rond	
+people		主人公	しゅじんこう	Héros héroine,  Perso principal	
+people		主婦	しゅふ	femme au foyer	
+language		主語	しゅご	sujet	
+food		丼	どんぶり	bol de porcelaine,  bol de riz avec une garniture dessus	
+time	expression	久しぶりに	ひさしぶり	Après une longue période  Depuis longtmps Peut être suivi de の (nom)	
+movement		乗り換える	のりかえる	Changement de train (d'opinion?) 換える:échanger, convertir, remplacer	
+movement	TODO	乗り物	のりもの	Véhicule	
+language		乱暴	らんぼう	Dur, déraisonnable  Grossier, violent	
+body		乳	ちち	lait (maternel) poitrine, seins	
+cloth		乾く	かわく	Sécher ( 乾かす)	
+feeling		予感	よかん	Préssentiment	
+school		予習	よしゅう	préparation pour un cours	
+protect		予防	よぼう	précaution,  prévention,  protection contre	
+society	hierarchy	事務員	じむいん	Employés de bureau	
+society		事務所	じむしょ	Bureau (batiment)	
+shape		事態	じたい	État des choses	
+quantity		二倍	にばい	deux fois, double	
+noun		井戸	いど	puits	
+interact		交じる	まじる	Être melanger à S'associer, se joindre à Se meler dans	
+city	TODO	交番	こうばん	Poste/kiosque de police	
+circulation		交通	こうつう	(moyen de) transport, circulation (routière), communication,  relation, trafic	
+circulation		交通事故	こうつうじこ	Accident de la route	
+circulation		交通事故	こうつうじこ	Les morts dues aux accidents	
+noun		人形	にんぎょう	Marrionette	
+people		人手	ひとで	someone else's hands, other hands	
+judgment		人気	にんき	Populaire, à la mode	
+people		人物	じんぶつ	Personnage, personalité, personne d'envergure (de talent)	
+people		人生	じんせい	Existence vie	
+time	short	今でも	いまでも	even now, still, as yet	
+time	short	今の所	いまのところ	Pour l'instant	
+	ERROR	今の所	いまのところ	1)Looking from present to the future A て形 d'un verbe indiquant un changement (増える、大きなる。。。)   2)Aてくる (edit) 3)Aていた -> descrit changements qui se sont produis dans le passé 前は嫌いでしたが、日本語が好きになってきました。	
+time	short	今度	こんど	Cette fois ci	

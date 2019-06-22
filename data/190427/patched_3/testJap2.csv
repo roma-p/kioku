@@ -1,0 +1,101 @@
+categorie	tag	word	prononciation	meaning	example
+	expression	おや		çà par exemple!,  mon dieu !,  oh!, oh?, tiens!	
+people		お前	おまえ	chéri(e),  hé toi,  mon enfant,  toi, tu	
+people		お医者さん	おいしゃさん	Docteur	
+gift		お土産	おみやげ	Cadeau, souvenirs	
+	expression	お大事に	おだいじに	Prenez soin de vous	
+people		お嬢さん	おじょうさん	Mademoiselle, fille de	
+gift		お年玉	おとしだま	Cadeau de nouvelle années	
+food		お弁当	おべんとう	Bento	
+	ERROR	お弁当	おべんとう	Thank you for waiting,  Have I kept you waiting?	
+interact		お持て成し	おもてなし	hospitality,  entertainment, service	
+people		お気に入り	おきにいり	Chouchou, favori (en classe) Bookmark(web)	
+food		お湯	おゆ	hot water 丁寧語	お湯を沸かしてください
+	ERROR	お湯を沸かしてください			
+interact		お目にかかる	おめにかかる	to meet (someone of higher status) 謙譲語	
+interact	thanks	お礼	おれい	expression de gratitude, remerciement	
+food		お節	おせち	Bouffe de premier de l'an	
+body		お腹	おなか	Estomac, ventre	
+interact	thanks	お蔭	おかげ	Grace à  Merci à...	
+interact		お見舞い	おみまい	Visite d'un malade	
+interact	expression	お邪魔します	おじゃまします	excuse me for disturbing (interrupting) you, greeting used when entering someone's home	
+	ERROR	お酒もタバコも止むほうが体にいいです。		Pour ta santé (corps), se serzit mieux que stoppe l’alcool et le tabac	
+people		お金持ち	おかねもち	Riche	
+money		お釣り	おつり	Monnaie	
+	short	かも		may, might, perhaps, may be, possibly Court...	
+	expression	かも知れない	かもしれない	ça se pourrait, peut-être, possible Avec vb savoir	
+feeling		がっかり		être déçu, être découragé, être démoralisé, être désappointé	
+lot	short	きちんと		avec précision, exactement	
+lot	short	きっと		sûrement, sans aucun doute	
+shape		きつい		Serré Sevère, fort	
+	double	きらきら		Étinceler, briller, clignoter	
+animal		くも		Areignée	
+	double	ぐちゃぐちゃ		pulpy, soppy, sloppy	
+sleep		ぐっすり眠る	ぐっすり	Dormir à poing fermé	
+character		けっぺきな		Maniaque de la propreté	
+interact		ける		Donner un coup de pied, rejeter	
+people	short	こいつ		This fellow This guy This person	
+	short	こちらこそ		it is I who should say so	
+language		ことわざ		maxime, proverbe	
+	ERROR	この先に広場があるよ		Il y a une place un peu plus loin	
+	ERROR	この先に広場があるよ		faisons des vêtements avec ce tissu	
+time	short	この次	このつぎ	La prochaine fois	
+	ERROR	この次	この次	Cette ville est vivante (A de la vivacité)	
+feeling	composed	こみ上げる	こみあげる	to fill (one's heart),  to experience a welling up of feelings or sensations	
+colour		こん		Bleu marine	
+	short	こんな事	こんなこと	Une telle chose	
+food		ご馳走	ごちそう	Festin, régaler qqun	
+	short	さえ		even,  if only, if just,  as long as,  the only thing needed	
+speed	short	さつさと		Rapidement	
+accomplish		しくじる		Echouer, manquer son coup, rater	
+time		しばらく		Peu de temps apres Pendant un moment	
+accomplish		しまう		Finir complètement  Mettre fin à...	
+lot	short	すっかり		Complêtement entièrement	
+few	short	すんなり		slim, slender, lithe, supple	
+lot	short	ずっと		à l'extrême, bien plus, depuis-pendant longtemps	
+few	short	ずつ		apiece, each	
+	logic	せっかく		en dépit de, malgré	
+noun		せっけん		Savon	
+	expression	そうやって		like that, that way, thus	
+	logic	その他	そのほか	D'autre part	
+	ERROR	その他	そのほか	Ce kimono vous va bien!	
+	double	それぞれ		Chacun individuellement respectivement	
+	ERROR	それぞれ		chacun, chacun respectivement, chaque, individuellement	
+	logic	それに		De plus En putre	
+	expression	それほど		à ce point	
+speed	double	そろそろ		slowly, quietly,  steadily, gradually	
+time	double	そろそろ		Je vais rentrer bientôt  Je ´fais mon départ'	
+shape		たたずまい		appearance, shape,  figure, bearing	
+	logic	ために		Pour, afin de...	
+mental		ためらう		Hésiter	
+	logic	だけでな		Pas seulement ... Mais aussi...	
+few	short	ちっと		Un petit peu	
+few	short	ちっとも		Pas du tout	
+lot	short	ちゃった		Faire complêtement Finir de fr	
+few	short	ちょっとも		Pas du tout	
+	ERROR	っぽい		-ish, -like	
+time	short	ついに		À la fin, enfin finalement	
+judgment		でたらめ		Absurde, infondé, insensé (出鱈目)	
+mental	composed	でっち上げる	でっちあげる	Fabriquer, inventer Made up (story)	
+interact		と申する	もう	S'appeler	もう
+time	double	とうとう		à la fin, enfin, finalement	
+	logic	としたら		Si ça arrive	
+	ERROR	としたら		Il s'est passé quoi?	
+	short	どうせ		après tout,  au mieux,  de toute façon,  de toute manière	
+	expression	どないしたん		what's the matter?	
+quantity	short	どれだけ		how long, how much, to what extent	
+	expression	なのである なので	なのである	Il en est sur Certainement   (Fin de phrase)	
+	expression	なんて		such as, (things) like	
+	logic	のに		Malgré (Entre autres)	
+judgment		ひどい		Affreux cruel grave (Très utilisé)	
+feeling		びっくり		Être surpris Impressionné, effrayé	
+suddenly	short	ふと		Accidentellment, par hasard, soudainement	
+feeling	double	ぶるぶる		frisson de froid ou de peur,  secousse, tremblement	
+movement		ほっつき歩く	ほっつきある	to loiter around, to wander about	
+sense	short	ほら		Regarde!	
+character	double	ぼやぼや		distrait, négligent, paresseux	
+	double	ぼろぼろ		effondrement, progressivement, usé	
+		めっきり		Sensiblement	
+	expression	もう時間でずよ	じかん	C'est déjà l'heure!	
+	expression	やがる		Suffixe du vb indiquant haine mepris dedain sur l'action d'autrui	
+	ERROR	やがる		Manger plus lentement et en machant mieux!	
