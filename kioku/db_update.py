@@ -68,4 +68,4 @@ def _format_row(row) :
 # HELPERS '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 def _get_delimiter() : 
-    return configuration.getConfiguration()._sections['csv']['delimiter']
+    return configuration.get_configuration().csv_delimiter

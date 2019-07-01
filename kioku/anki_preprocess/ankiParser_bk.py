@@ -72,63 +72,68 @@ def parse(inputFile, outputDir):
         for row in csv.reader(fin, delimiter='	'):
             # usefull to just get half of the list
             # but question are not necessrely before awnser
-            # we forced japanese as row[0]
+            print(row)
+            print(row[0])
+            print(row[1])
+            print(row[2])
+            if row[2] == 'Card 1':
+                # separating French from Japanese
+                if _is_cjk(row[0][0]):
+                    japanese = row[0]
+                    french = row[1]
+                else:
+                    japanese = row[1]
+                    french = row[0]
 
-            if not _is_cjk(row[0][0]) : 
-                continue
+                # 3 cases :
+                # 1, juste kana
+                # 2, a bunch of kanji and kana prononciation
+                # 3, 2 + a sentence exemple.
 
-            japanese = row[0]
-            french = row[1]
-
-            # print(japanese)
-
-            # 3 cases :
-            # 1, juste kana
-            # 2, a bunch of kanji and kana prononciation
-            # 3, 2 + a sentence exemple.
-
-            # 1) no kanjis
-            if '  ' not in japanese:
-                word = japanese
-                prononciation = ''
-                exemple = ''
-
-            else:
-                potentialKanjis, afterKanjis = japanese.split(' ', 1)
-
-                # remove trailing spaces.
-                afterKanjis = _delTrailingSpaces(afterKanjis)
-
-                if afterKanjis[:2] == 'する':
-                    potentialKanjis += ' (する)'
-                    afterKanjis = _delTrailingSpaces(afterKanjis[2:])
-
-                if afterKanjis[:2] == 'な ':
-                    potentialKanjis+= ' (な)'
-                    afterKanjis = _delTrailingSpaces(afterKanjis[1:])
-
-                # x) Potentials errors : Full phrase.
-                if len(potentialKanjis) > 7:
-                    log.error('potential error :' + potentialKanjis)
-                    potentialErrors.append(row)
-
-                # 2) just kanjis and prononciation
-                elif '   ' not in afterKanjis:
-                    word = potentialKanjis
-                    prononciation = _delTrailingSpaces(afterKanjis)
+                # 1) no kanjis
+                if '  ' not in japanese:
+                    word = japanese
+                    prononciation = ''
                     exemple = ''
 
-                # 3) kanjis prononciation and exemple
                 else:
-                    word = potentialKanjis
-                    prononciation, exemple = afterKanjis.split('  ', 1)
-                    prononciation = _delTrailingSpaces(prononciation)
-                    exemple = _delTrailingSpaces(exemple)
+                    potentialKanjis, afterKanjis = japanese.split(' ', 1)
 
-            if word not in existing_kanjis :
-                newEntriesList.append(['','',word, prononciation, french, exemple])
-            else :
-                log.error('already exists : '+word)
+                    # remove trailing spaces.
+                    afterKanjis = _delTrailingSpaces(afterKanjis)
+
+                    if afterKanjis[:2] == 'する':
+                        potentialKanjis += ' (する)'
+                        afterKanjis = _delTrailingSpaces(afterKanjis[2:])
+
+                    if afterKanjis[:2] == 'な ':
+                        potentialKanjis+= ' (な)'
+                        afterKanjis = _delTrailingSpaces(afterKanjis[1:])
+
+                    # x) Potentials errors : Full phrase.
+                    if len(potentialKanjis) > 7:
+                        log.error('potential error :' + potentialKanjis)
+                        potentialErrors.append(row)
+
+                    # 2) just kanjis and prononciation
+                    elif '   ' not in afterKanjis:
+                        word = potentialKanjis
+                        prononciation = _delTrailingSpaces(afterKanjis)
+                        exemple = ''
+
+                    # 3) kanjis prononciation and exemple
+                    else:
+                        word = potentialKanjis
+                        prononciation, exemple = afterKanjis.split('  ', 1)
+                        prononciation = _delTrailingSpaces(prononciation)
+                        exemple = _delTrailingSpaces(exemple)
+
+
+                if word not in existing_kanjis :
+                    newEntriesList.append(['','',word, prononciation, french, exemple])
+                else :
+                    log.error('already exists : '+word)
+
 
     nb_of_files = len(newEntriesList)//100
     if len(newEntriesList)%100 != 0 :

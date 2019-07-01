@@ -11,9 +11,9 @@ log = logging.getLogger()
 class  Japanese_DB_handler(DB_handler):
 
     def __init__(self):
-        config_data = configuration.getConfiguration()      
+        config_data = configuration.get_configuration()      
         if not config_data : return None 
-        db_path = config_data.get('kioku', 'db_path')
+        db_path = config_data.db_path
         base_format = japanese_dataBaseFormat.get_baseFormat()
         super().__init__(db_path, base_format)
 
@@ -319,7 +319,7 @@ class  Japanese_DB_handler(DB_handler):
     def _add_to_db_index(self, table, field, list_of_index_entries, silent = False):
 
         data_order = (field,)
-        formatted_data = [(entry,) for entry in set(list_of_index_entries)]
+        formatted_data = [(entry,) for entry in set(list_of_index_entries) if entry and len(entry.strip())]
 
         existing_list = self.select(table, field)
         duplicate_set = set(existing_list) & set(formatted_data)
@@ -370,6 +370,9 @@ class  Japanese_DB_handler(DB_handler):
                 log.error('missing meaning for word : '+ str(word))
                 error_list.append(vocab)
                 valid = False
+            # if not categorie : 
+            #     log.error("can't add word " + word + " since it doesn't have categorie.")
+            #     error_list.append(vocab)
             if categorie and categorie not in existing_cat_tuple : 
                 log.error("can't add "+ word + ", categorie " + categorie + " does not exists.")
                 error_list.append(vocab)
@@ -444,8 +447,8 @@ class  Japanese_DB_handler(DB_handler):
         for tmp_entry in vocab_tmp_entries_list : 
             word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_list = tmp_entry
             core_prononciation_id = existing_core_p_dict[core_prononciation]
-            categorie_id = existing_cat_dict[categorie]
             tag_id = existing_tag_dict[tag] if tag else None # TODO ; shall be equal to None. 
+            categorie_id = existing_cat_dict[categorie] if categorie else None
             word_kanjis_tmp_entries_dict[word] = [existing_kanjis_dict[kanji] for kanji in kanjis_list]
             vocab_final_entries_list.append((word, prononciation, core_prononciation_id, meaning, example, categorie_id, tag_id))
 

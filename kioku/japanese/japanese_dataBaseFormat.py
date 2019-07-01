@@ -39,7 +39,7 @@ baseFormat = {
 		'core_prononciation' : simple_int_field,
 		'meaning' : not_null_text_field, 
 		'example' : simple_text_field, 
-		'categorie' : not_null_int_field, 
+		'categorie' : simple_int_field, 
 		'tag' : simple_int_field, 
 		r.key_foreign() : {
 		    'tag' : ('tags', 'id'),
