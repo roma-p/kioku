@@ -75,7 +75,7 @@ def parse(inputFile, outputDir):
             print(row)
             print(row[0])
             print(row[1])
-            print(row[2])
+            print(row[])
             if row[2] == 'Card 1':
                 # separating French from Japanese
                 if _is_cjk(row[0][0]):

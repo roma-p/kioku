@@ -62,7 +62,8 @@ def parse(inputFile, outputDir):
 
     copyfile(inputFile, _generateFileName(config_data.input_files_bk, 'input'))
 
-    existing_kanjis = db_handler.select("vocab", "word")
+    f = db_handler.base_format
+    existing_kanjis = db_handler.list(f.vocab, f.vocab.word)
 
     potentialErrors = []
     newEntriesList = []
@@ -73,7 +74,7 @@ def parse(inputFile, outputDir):
             # usefull to just get half of the list
             # but question are not necessrely before awnser
             # we forced japanese as row[0]
-
+        
             if not _is_cjk(row[0][0]) : 
                 continue
 
@@ -88,7 +89,10 @@ def parse(inputFile, outputDir):
             # 3, 2 + a sentence exemple.
 
             # 1) no kanjis
-            if '  ' not in japanese:
+
+
+            status = True
+            if ' ' not in japanese:
                 word = japanese
                 prononciation = ''
                 exemple = ''
@@ -110,10 +114,12 @@ def parse(inputFile, outputDir):
                 # x) Potentials errors : Full phrase.
                 if len(potentialKanjis) > 7:
                     log.error('potential error :' + potentialKanjis)
+                    status = False
                     potentialErrors.append(row)
 
+
                 # 2) just kanjis and prononciation
-                elif '   ' not in afterKanjis:
+                elif ' ' not in afterKanjis:
                     word = potentialKanjis
                     prononciation = _delTrailingSpaces(afterKanjis)
                     exemple = ''
@@ -121,11 +127,11 @@ def parse(inputFile, outputDir):
                 # 3) kanjis prononciation and exemple
                 else:
                     word = potentialKanjis
-                    prononciation, exemple = afterKanjis.split('  ', 1)
+                    prononciation, exemple = afterKanjis.split(' ', 1)
                     prononciation = _delTrailingSpaces(prononciation)
                     exemple = _delTrailingSpaces(exemple)
 
-            if word not in existing_kanjis :
+            if status and word not in existing_kanjis :
                 newEntriesList.append(['','',word, prononciation, french, exemple])
             else :
                 log.error('already exists : '+word)

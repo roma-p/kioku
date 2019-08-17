@@ -18,6 +18,8 @@ log.setLevel(logging.DEBUG)
 app = Bottle()
 selector_set = {Categorie, Tag, Kanjis, Core_P}
 
+# TODO : Del this ! selector type already defined in selector object...
+# seriously ...
 search_type_to_selector = {
     'tag' : Tag, 
     'categorie' : Categorie, 
@@ -25,12 +27,15 @@ search_type_to_selector = {
     'core_prononciation' : Core_P
 }
 
+application_title = 'kioku 記憶'
+
 # PAGES ***********************************************************************
 # *****************************************************************************
 
-
-# -> To factorize with every selector list pages. 
-# -> all of it in a subwebpage /selector. 
+@app.route('/')
+def main_page() :
+    data = header_kioku()
+    return data
 
 @app.route('/selectors/<selector>')
 def selector_list_page(selector):
@@ -54,7 +59,6 @@ def selector_single_page(selector, selector_id):
     data += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
 
     return data
-
 
 @app.route('/words/<word_id>')
 def word_page(word_id): 
@@ -88,8 +92,14 @@ def search_page():
 
 # contains the app name and a search field. 
 @view('header_kioku')
-def header_kioku() : 
-    return template('header_kioku')
+@view('link')
+def header_kioku() :
+    global application_title
+
+    title = template('link', text = application_title, url = '/')
+    selector_link_list = [create_selector_type_link(selector) 
+        for selector in selector_set]
+    return template('header_kioku', title = title,  selector_link_list  = selector_link_list)
 
 # selector are : kanjis / tag / categories etc...
 @view('header_selector')
@@ -139,7 +149,6 @@ def word_page(word_data) :
     if word_data['categorie']: 
         categorie_data = create_selector_id_link(Categorie, word_data['categorie'])
     else : categorie_data = None
-
 
     return template(
         'word_page', 
