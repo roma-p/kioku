@@ -1,5 +1,5 @@
 import logging
-from bottle import Bottle, run, view, template, request
+from bottle import Bottle, run, view, template, request, static_file
 from japanese.Japanese_DB_handler import Japanese_DB_handler
 from japanese import search
 from japanese.SearchResult import WordSearchResult, WordListSearchResult, SelectorResult
@@ -28,24 +28,34 @@ search_type_to_selector = {
 }
 
 application_title = 'kioku 記憶'
+main_css = '/main.css'
 
 # PAGES ***********************************************************************
 # *****************************************************************************
 
 @app.route('/')
+@view('main_page')
 def main_page() :
-    data = header_kioku()
+    name = application_title
+    css_file = main_css
+    body = template('main_page', body = header_kioku())
+    data = page_base_structure(name, css_file, body)
     return data
 
 @app.route('/selectors/<selector>')
 def selector_list_page(selector):
 
+
     selector = get_selector_from_url(selector)
     if not selector : return 'prout'
     selector_list, selector_number = selector.get_selector_list_data()
 
-    data = header_kioku()
-    data += list_selector_id(selector, selector_number, selector_list)
+    name = application_title + ': ' + selector.sub_url
+    css_file = main_css    
+    body = header_kioku()
+    body += list_selector_id(selector, selector_number, selector_list)
+    data = page_base_structure(name, css_file, body)
+
     return data
 
 @app.route('/selectors/<selector>/<selector_id>')
@@ -54,9 +64,15 @@ def selector_single_page(selector, selector_id):
     selector = get_selector_from_url(selector)
     if not selector : return 'prout' 
     vocab_list = selector.get_vocab_from_selector(selector_id)
-    data = header_kioku()
-    data += header_selector(selector, selector_id)
-    data += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
+
+    name = application_title + ', ' + selector.selector_type + ': ' + selector_id
+    css_file = main_css 
+    
+    body = header_kioku()
+    body += header_selector(selector, selector_id)
+    body += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
+
+    data = page_base_structure(name, css_file, body)
 
     return data
 
@@ -66,8 +82,12 @@ def word_page(word_id):
     word_data = Word.get_word_data(word_id)
     if not word_data : return 'prout'
 
-    data = header_kioku()
-    data += word_page(word_data)
+    name = application_title + ': ' + word_id
+    css_file = main_css 
+    body = header_kioku()
+    body += word_page(word_data)
+
+    data = page_base_structure(name, css_file, body)
 
     return data
 
@@ -76,19 +96,35 @@ def search_page():
     if not request.GET.input : return 'NON'
     search_input = request.GET.input
     search_result = search.search_web_app(search_input)
-    data = header_kioku()
-    data += header_search(search_input)
+
+    name = application_title + ' search results : ' + search_input
+    css_file = main_css
+
+    body = header_kioku()
+    body += header_search(search_input)
     for single_result in search_result.get_ordered_search_result() : 
         if type(single_result) not in select_results_template.keys() : 
             log.error('unknownType')
         else : 
-            data += select_results_template[type(single_result)](search_input, single_result)
+            body += select_results_template[type(single_result)](search_input, single_result)
+
+    data = page_base_structure(name, css_file, body)
+
     return data
 
+# distributing static files. 
+@app.route('/<filename:path>')
+def send_static(filename):
+    return static_file(filename, root='www/static/')
 
 
 # RENDERING WEB ***************************************************************
 # *****************************************************************************
+
+@view('base_structure')
+def page_base_structure(page_name, css_file, body) : 
+    return template('base_structure', page_name = page_name, css_file = css_file, body = body)
+
 
 # contains the app name and a search field. 
 @view('header_kioku')
@@ -203,7 +239,6 @@ def search_result_selector(input, selectorSearchResult) :
     data = search_result_header(selectorSearchResult.selector_type, linked_selector, examples_list = examples_data)
     # TODO : MISSING STUFF
     return data
-
 
 @view('search_result_header')
 def search_result_header(result_type, result_value, examples_list = None) : 

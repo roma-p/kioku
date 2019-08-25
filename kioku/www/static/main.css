@@ -1,0 +1,98 @@
+.center {
+    text-align: center;
+}
+
+h1 {
+    font-size: 100%;
+    line-height: 0.2em;
+}   
+
+.main_page {
+    /*vertical-align: center;*/
+    position: absolute;
+    top: 20%;
+    left : 10%;
+}
+
+.main_page h1 {
+    font-size: 200%;
+}
+
+.header a:any-link {
+    color : black;
+    text-decoration: none;
+}
+
+.header a:hover {
+    color : blue;
+}
+
+.list_vocabulary a:any-link {
+    color : black;
+    text-decoration: none;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.list_vocabulary a:hover {
+    color : blue;
+}
+
+.list_selector_id a:any-link {
+    color : black;
+    font-size: 120%;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.list_selector_id a:hover {
+    color : blue;
+}
+
+.word_page {
+    margin: 5% 20% 1%;
+}
+
+.word_page a:any-link {
+    color : black;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 100%;
+    color : blue;
+}
+
+.word_page a:hover {
+    color : black;
+}
+
+.word_page_word_section {
+    margin: 0% 0% 5%;
+}
+
+.word_page_word {
+    color : black;
+    font-size: 200%;
+    font-weight: bold;    
+}
+
+.word_page_prononciation {
+    color : black;
+    font-size: 120%;   
+}
+
+.word_page_example {
+    margin: 0% 0% 5%;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {background-color: #f2f2f2;}
+

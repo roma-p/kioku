@@ -1,0 +1,1 @@
+<div class="main_page">{{!body}}</div>
