@@ -1,9 +1,13 @@
 kioku 記憶
 ----------
 
-kioku is a japanese dictionnary build to list / sort vocabulary extracted from anki software in order to facilitate vocabulary study. It will also provides space repetition revision features despite those features not finalized yet. 
+kioku is a japanese dictionnary build to list/sort vocabulary extracted from anki software in order to facilitate vocabulary study. It will also provides space repetition revision features despite those features not finalized yet. 
 
 kioku was developped with python 3.0, bottle and sqlite3. 
+
+demo version (using some of my own anki decks) available here : ///
+
+**purpose**
 
 > Anki is a free and open-source flashcard program that utilizes spaced repetition. Spaced repetition has been shown to increase rate of memorization.
 
@@ -13,7 +17,7 @@ https://en.wikipedia.org/wiki/Anki_(software)
 
 https://en.wikipedia.org/wiki/Spaced_repetition
 
-demo version (using some of my own anki decks) available here : ///
+
 
 purpose 
 -------
