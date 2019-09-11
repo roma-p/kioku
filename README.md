@@ -25,11 +25,11 @@ purpose
 I've been studying japanese / chinese for a few years now and I heavily relied on Anki for learning words and kanjis. But in the process, I struggled with two issuses : 
 
 - When checking in a japanese dictionnary for synonyms or words using a given kanji, I was overwhelmed by the amount of data I had to navigate around before finding what I wanted... 
-- With my decks getting bigger and bigger (by the time I reached 3000 fashcards), I realized that I was often confusing mnemonics I used for similar cards because the interval of time between their respective revision was very long, despite the two cards were easy to confuse. I occured to me that  I needed cross-revision based on other criterium (eg : words with same/similar kanjis, with similar prononciations, adverbs etc..) in addition to the traditionnal Anki revision.
+- With my decks getting bigger and bigger (by the time I reached 3000 fashcards), I realized that I was often confusing mnemonics I used for similar cards because the interval of time between their respective revision was very long, despite the two cards were easy to confuse. It occured to me that  I needed cross-revision based on other criterium (eg : words with same/similar kanjis, with similar prononciations, adverbs etc..) in addition to the traditionnal Anki revision.
 
 Therefore, kioku is aiming to provide user with : 
 
-- a dictionnary only inlcuding data from user's anki decks, so user can easily navigate, in a web interface, every word he ever studied. IF A WORD IS IN THE DICTIONNARY, USER LEARNT IT, HE SHOULD KNOW IT. 
+- a dictionnary only inlcuding data from user's anki decks, so user can easily navigate, in a web interface, every word he ever studied. **if a word is in the dictionnary, user learnt it, he should know it**. 
 - an easy way to list those words by : 
     + tag (useally grammatical role)
     + categorie (usually semantic field)
