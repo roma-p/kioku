@@ -7,7 +7,7 @@ kioku was developped with python 3.0, bottle and sqlite3.
 
 demo version (using some of my own anki decks) available here : ///
 
-**purpose**
+*on Anki**
 
 > Anki is a free and open-source flashcard program that utilizes spaced repetition. Spaced repetition has been shown to increase rate of memorization.
 
