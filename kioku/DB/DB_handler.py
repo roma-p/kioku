@@ -230,7 +230,13 @@ class DB_handler(metaclass=Singleton):
 
         for data in dataList :
             if len(data) != len(dataOrder) : 
-                log.error("failed adding to table "+table+" data : "+str(data) + "as "+str(dataOrder)+', too few or not enough data.')
+                log.error("failed adding to table "
+                            +table
+                            +" data : "
+                            +str(data) 
+                            + "as "
+                            +str(dataOrder)
+                            +', too few or not enough data.')
                 return None
             self._req_add(table, dataOrder, *data)
         self.kiokuDB.commit()
@@ -253,7 +259,8 @@ class DB_handler(metaclass=Singleton):
         self._req_del(table, **conditions)
         self.kiokuDB.commit()
 
-    def replace(self, table, fieldReplaced, originalValue, newValue, **conditions): 
+    def replace(self, table, fieldReplaced, originalValue, newValue, 
+                **conditions): 
         """
         replace every value <originalValue> by <newValue> in the <fieldReplaced> of table <table>
         conditions works as defined in class doc.
@@ -333,7 +340,10 @@ class DB_handler(metaclass=Singleton):
         if missingFields : 
             log.error('fields in query not existing in database.')
             for table, fieldList in missingFields.items() : 
-                log.error('missing fields :' + ', '.join(fieldList) + ' in table ' + table)
+                log.error('missing fields :' 
+                            + ', '.join(fieldList) 
+                            + ' in table ' 
+                            + table)
             status = False
         return status
 
@@ -400,7 +410,14 @@ class DB_handler(metaclass=Singleton):
         fieldList = self.base_format.list_field_names(table)
         if not fieldList : return None
         if updated_field not in fieldList : return None
-        sqlrequest = "UPDATE " + table + " SET " + updated_field + " = '" + updated_value+"'"
+        sqlrequest = "UPDATE " \
+                        + table \
+                        + " SET " \
+                        + updated_field \
+                        + " = '" \
+                        + updated_value \
+                        +"'"
+
         if conditions : sqlrequest += self._format_conditions(**conditions)
         return sqlrequest
 
@@ -464,7 +481,16 @@ class DB_handler(metaclass=Singleton):
 
         #TODO TEST U. 
         for key in table.list_foreign_keys() : 
-            command += r.key_foreign() +' ('+key.child_field+')' + ' REFERENCES '+ key.parent_table+'('+key.parent_field+'), ' 
+            command += r.key_foreign() \
+                        + ' (' \
+                        + key.child_field \
+                        + ')' \
+                        +  ' REFERENCES ' \
+                        +  key.parent_table \
+                        + '(' \
+                        + key.parent_field \
+                        + '), '
+
         command = command[:-2] + ')'
 
         return command 
@@ -482,7 +508,8 @@ def _getDataElementName(object) :
     else : return object()
 
 def _formatData(*tablesAndFields, **conditions) :
-    r_tablesAndFields = tuple([_getDataElementName(item) for item in tablesAndFields])
+    r_tablesAndFields = tuple([_getDataElementName(item) for item 
+                                in tablesAndFields])
     if conditions : 
         r_conditions = {_getDataElementName(key) : value 
                             for key, value in conditions.items()}

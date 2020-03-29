@@ -35,7 +35,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_core_prononciation(self, core_p, *fieldToGet, limit = None) : 
+    def list_word_by_core_prononciation(self, core_p, *fieldToGet, limit=None) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
@@ -45,7 +45,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_categorie(self, categorie_name, *fieldToGet, limit = None) : 
+    def list_word_by_categorie(self, categorie_name, *fieldToGet, limit=None) : 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
@@ -139,7 +139,8 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_kanjis_by_usage(self, limit = None, offset = None) : 
         f = self.base_format
-        q = Query().select(f.word_kanjis, f.kanjis.name, count_field  = f.word_kanjis.word_id)
+        q = Query().select(f.word_kanjis, f.kanjis.name,
+                            count_field=f.word_kanjis.word_id)
         q.join_left(f.word_kanjis.kanji_id, f.kanjis.id)
         q.group_by(f.word_kanjis.kanji_id)
         q.order_by_count(f.word_kanjis.word_id).desc()
@@ -152,7 +153,8 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_categorie_by_usage(self, limit = None, offset = None) : 
         f = self.base_format
-        q = Query().select(f.vocab, f.categories.name, count_field = f.vocab.categorie)
+        q = Query().select(f.vocab, f.categories.name, 
+                            count_field=f.vocab.categorie)
         q.join_left(f.vocab.categorie, f.categories.id)
         q.group_by(f.vocab.categorie)
         q.order_by_count(f.vocab.id).desc()
@@ -174,7 +176,8 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_core_p_by_usage(self, limit = None, offset = None) :
         f = self.base_format
-        q = Query().select(f.vocab, f.core_prononciations.name, count_field = f.vocab.id)
+        q = Query().select(f.vocab, f.core_prononciations.name, 
+                            count_field=f.vocab.id)
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
         q.group_by(f.vocab.core_prononciation)
         q.order_by_count(f.vocab.id).desc()
@@ -183,7 +186,8 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data        
 
-    def list_vocab_by_approximative_field(self, key_field, key_value, *field_to_get) : 
+    def list_vocab_by_approximative_field(self, key_field, key_value, 
+                                            *field_to_get) : 
         """
         retrieve data from vocab table, where its key_field IS or CONTAINS key_value
         (but does not auto correct typo, yet)
@@ -227,7 +231,8 @@ class  Japanese_DB_handler(DB_handler):
             if field.parent_table() != f.vocab()]
 
         if wrong_field_list : 
-            log.error('trying to get field that does not exists in ' + f.vocab() + ':')
+            log.error('trying to get field that does not exists in ' 
+                + f.vocab() + ':')
             for field in wrong_field_list : 
                 log.error(f.vocab() + ' has no field : ' + str(field))
             return None
@@ -258,13 +263,15 @@ class  Japanese_DB_handler(DB_handler):
         # 3) sorting / presenting data : 
         # ------------------------------
 
-        if perfect_matches : perfect_matches = tuple([data[1:] for data in perfect_matches])
+        if perfect_matches : perfect_matches = tuple([data[1:] for data in 
+                                                        perfect_matches])
 
         # sorting data
         if approximations : approximations.sort(key = lambda x:len(x[0]))
 
         # removing first field (key_field added at beguining of method)
-        approximations = tuple([data[1:] for data in approximations]) if approximations else None
+        approximations = tuple([data[1:] for data in approximations]) \
+            if approximations else None
 
 
         return perfect_matches, approximations
@@ -316,17 +323,20 @@ class  Japanese_DB_handler(DB_handler):
         field = self.base_format.kanjis.name
         self._add_to_db_index(table, field, kanjis_list, silent)
 
-    def _add_to_db_index(self, table, field, list_of_index_entries, silent = False):
+    def _add_to_db_index(self, table, field, list_of_index_entries, 
+                        silent = False):
 
         data_order = (field,)
-        formatted_data = [(entry,) for entry in set(list_of_index_entries) if entry and len(entry.strip())]
+        formatted_data = [(entry,) for entry in set(list_of_index_entries) 
+                            if entry and len(entry.strip())]
 
         existing_list = self.select(table, field)
         duplicate_set = set(existing_list) & set(formatted_data)
         valid_set = set(formatted_data) - set(existing_list)
 
         if not silent and duplicate_set : 
-            log.warning('following data already exists in table/field : ' +table()+ '/'+ field() + ' and will not be added.')
+            log.warning('following data already exists in table/field : ' 
+                +table()+ '/'+ field() + ' and will not be added.')
             for data in duplicate_set: 
                 log.warning(data[0] + ' already exists.') 
         self.add(table, data_order, *tuple(valid_set))
@@ -341,8 +351,10 @@ class  Japanese_DB_handler(DB_handler):
             'meaning','example','categorie','tag')
 
         # 1) listing existing categorie, tag to ensure foreign key constraints * 
-        existing_cat_tuple = self.list(self.base_format.categories, self.base_format.categories.name)
-        existing_tag_tuple = self.list(self.base_format.tags, self.base_format.tags.name)
+        existing_cat_tuple = self.list(self.base_format.categories, 
+                                        self.base_format.categories.name)
+        existing_tag_tuple = self.list(self.base_format.tags, 
+                                        self.base_format.tags.name)
 
         # TODO NOT CHECKING UNICITY / NOT NULL ? 
 
@@ -408,7 +420,11 @@ class  Japanese_DB_handler(DB_handler):
                 # listing kanjis present in the word
                 kanjis_tuple = japanese_helpers.list_kanjis(word)
                 kanjis_detected_set.update(set(kanjis_tuple))
-                vocab_tmp_entry = (word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_tuple)
+                vocab_tmp_entry = (
+                                    word, prononciation, core_prononciation,
+                                    meaning, example, categorie, tag, 
+                                    kanjis_tuple
+                                    )
                 vocab_tmp_entries_list.append(vocab_tmp_entry)
 
         if warning_error_list : 
@@ -423,14 +439,26 @@ class  Japanese_DB_handler(DB_handler):
             return False
 
         # 3) updating kanjis / core_prononciations tables *********************
-        existing_kanjis_set = set(self.list(self.base_format.kanjis, self.base_format.kanjis.name))
-        existing_core_p_set = set(self.list(self.base_format.core_prononciations, self.base_format.core_prononciations.name))
+        existing_kanjis_set = set(self.list(
+                                        self.base_format.kanjis, 
+                                        self.base_format.kanjis.name))
+        existing_core_p_set = set(self.list(
+                                        self.base_format.core_prononciations, 
+                                        self.base_format.core_prononciations.name))
 
-        kanjis_to_add_tuple = tuple([(k, ) for k in kanjis_detected_set - existing_kanjis_set])
-        core_p_to_add_list = tuple([(p, )for p in core_p_detected_set - existing_core_p_set])
+        kanjis_to_add_tuple = tuple([(k, ) for k in 
+                                        kanjis_detected_set 
+                                        - existing_kanjis_set])
+        core_p_to_add_list = tuple([(p, )for p in 
+                                        core_p_detected_set 
+                                        - existing_core_p_set])
 
-        self.add(self.base_format.kanjis, (self.base_format.kanjis.name,), *kanjis_to_add_tuple)
-        self.add(self.base_format.core_prononciations , (self.base_format.core_prononciations.name,), *core_p_to_add_list)
+        self.add(self.base_format.kanjis, 
+                    (self.base_format.kanjis.name,), 
+                    *kanjis_to_add_tuple)
+        self.add(self.base_format.core_prononciations , 
+                    (self.base_format.core_prononciations.name,), 
+                    *core_p_to_add_list)
 
         # 4) generating the entries that will be add to the database. *********
 
@@ -449,20 +477,32 @@ class  Japanese_DB_handler(DB_handler):
             core_prononciation_id = existing_core_p_dict[core_prononciation]
             tag_id = existing_tag_dict[tag] if tag else None # TODO ; shall be equal to None. 
             categorie_id = existing_cat_dict[categorie] if categorie else None
-            word_kanjis_tmp_entries_dict[word] = [existing_kanjis_dict[kanji] for kanji in kanjis_list]
-            vocab_final_entries_list.append((word, prononciation, core_prononciation_id, meaning, example, categorie_id, tag_id))
+            word_kanjis_tmp_entries_dict[word] = [existing_kanjis_dict[kanji] 
+                                                    for kanji in kanjis_list]
+            vocab_final_entries_list.append(
+                                        (word, prononciation, 
+                                        core_prononciation_id, meaning, 
+                                        example, categorie_id, tag_id)
+                                    )
 
         # 5) updating vocab table. 
-        data_order = ('word', 'prononciation', 'core_prononciation','meaning','example','categorie','tag')
+        data_order = (
+            'word', 'prononciation', 'core_prononciation',
+            'meaning','example','categorie','tag')
+        
         self.add(self.base_format.vocab , data_order, *vocab_final_entries_list)
 
         # 6) updating word_kanjis tables. 
-        word_id_dict = self._get_index_as_dict(self.base_format.vocab, self.base_format.vocab.word)
+        word_id_dict = self._get_index_as_dict(self.base_format.vocab, 
+                                                self.base_format.vocab.word)
         word_kanjis_final_entries_list = []
         for word, kanjis_id_tuple in word_kanjis_tmp_entries_dict.items() : 
             for kanji_id in kanjis_id_tuple : 
-                word_kanjis_final_entries_list.append((word_id_dict[word],kanji_id))
-        data_order = (self.base_format.word_kanjis.word_id, self.base_format.word_kanjis.kanji_id)
+                word_kanjis_final_entries_list.append(
+                                                (word_id_dict[word],
+                                                    kanji_id))
+        data_order = (self.base_format.word_kanjis.word_id, 
+                      self.base_format.word_kanjis.kanji_id)
         self.add(self.base_format.word_kanjis , data_order, *
             word_kanjis_final_entries_list)
 
@@ -471,7 +511,8 @@ class  Japanese_DB_handler(DB_handler):
     def _get_index_as_dict(self, tableObject, field_to_set_as_key = None) :
         if not field_to_set_as_key : field_to_set_as_key = tableObject.name 
         item_to_get = [field_to_set_as_key, tableObject.id]
-        data_as_dict = {id : name for (id, name) in self.select(tableObject, *item_to_get)}
+        data_as_dict = {id : name for (id, name) in 
+                            self.select(tableObject, *item_to_get)}
         return data_as_dict
 
 
@@ -485,11 +526,16 @@ class  Japanese_DB_handler(DB_handler):
         stat_dict['categories_number'] = self.count(self.base_format.categories)
         stat_dict['tags_number'] = self.count(self.base_format.tags)
         stat_dict['kanjis_number'] = self.count(self.base_format.kanjis)
-        stat_dict['core_p_number'] = self.count(self.base_format.core_prononciations)
-        stat_dict['most_used_categories'] = self.list_categorie_by_usage(limit = row_limit)
-        stat_dict['most_used_tags'] = self.list_tag_by_usage(limit = row_limit)
-        stat_dict['most_used_kanjis'] = self.list_kanjis_by_usage(limit = row_limit)
-        stat_dict['most_used_core_p'] = self.list_core_p_by_usage(limit = row_limit)
+        stat_dict['core_p_number'] = self.count(
+                                        self.base_format.core_prononciations)
+        stat_dict['most_used_categories'] = self.list_categorie_by_usage(
+                                                limit = row_limit)
+        stat_dict['most_used_tags'] = self.list_tag_by_usage(
+                                                limit = row_limit)
+        stat_dict['most_used_kanjis'] = self.list_kanjis_by_usage(
+                                                limit = row_limit)
+        stat_dict['most_used_core_p'] = self.list_core_p_by_usage(
+                                                limit = row_limit)
         return stat_dict
 
 

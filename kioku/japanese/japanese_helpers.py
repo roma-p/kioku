@@ -13,9 +13,12 @@ def is_cjk(character):
 	             (131072, 196607)]
 	            ])
 
-def is_kanjis(character): return _checking_range(character, unicode_range_kanjis())
-def is_hiragana(character) : return _checking_range(character, unicode_range_hiragana())
-def is_katagana(character) : return _checking_range(character, unicode_range_katakana())
+def is_kanjis(character): return _checking_range(character, 
+												unicode_range_kanjis())
+def is_hiragana(character) : return _checking_range(character, 
+												unicode_range_hiragana())
+def is_katagana(character) : return _checking_range(character, 
+												unicode_range_katakana())
 def is_kana(character) : return is_hiragana(character) or is_katagana(character)
 
 def list_kanjis(word) : 
@@ -48,11 +51,14 @@ def convertKanaToHiragana(word) :
 	translated_word = [] # TODO : NOT USE A LIST. 
 	for character in word : 
 		if is_katagana(character) :
-			translated_word.append(japanese_helpers_data.katakana_hiragana[character])
+			translated_word.append(
+							japanese_helpers_data.katakana_hiragana[character])
 		elif is_hiragana(character) : 
 			translated_word.append(character)
 		else : 
-			log.error("can't translate '"+ word +"' to hiragana... words need to be in kana to do so.")
+			log.error("can't translate '"
+						+ word 
+						+"' to hiragana... words need to be in kana to do so.")
 			return None
 	return ''.join(translated_word)
 
@@ -77,7 +83,8 @@ def gen_core_prononciation(word) :
 
 			# other simplification (shi -> chi / yo,ya,yu)
 			if _character in japanese_helpers_data.other_simplification.keys(): 
-				newWord.append(japanese_helpers_data.other_simplification[_character])
+				newWord.append(
+						japanese_helpers_data.other_simplification[_character])
 			else : newWord.append(_character)
 
 	# deleting trailing kanas. 

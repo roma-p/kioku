@@ -46,14 +46,16 @@ def search_kanji(input) :
         for match in perfect_matches : 
             word, prononciation, meaning  = match
             # if there is a word which consists of a single kanji, display it first.
-            search_result_list.append(WordSearchResult(word, prononciation, meaning = 0))
+            search_result_list.append(WordSearchResult(word, prononciation, 
+                                                        meaning = 0))
 
     kanji_existence = j.check_kanjis_existence(input)
     if kanji_existence : 
         # if kanji exists, display it right after pottential word in one kanji. 
         examples = j.list_word_by_kanjis(input, f.vocab.word, limit = 5)
         if examples : examples = [item[0] for item in examples]
-        search_result_list.append(SelectorResult('kanji', input, pertinence = 1, *examples))
+        search_result_list.append(SelectorResult('kanji', input, 
+                                                    pertinence = 1, *examples))
     word_list = j.list_word_by_kanjis(input, *vocab_field_to_get)
     # and belowm list of words using this kanjis
     search_result_list.append(WordListSearchResult(*word_list, pertinence = 2))
@@ -102,21 +104,25 @@ def search_word(input) :
             f.vocab.word, _input, *field_to_get)
     if is_kana : 
         _tmp_output[f.vocab.prononciation()] = j.list_vocab_by_approximative_field(
-            f.vocab.prononciation, _input, *field_to_get)
+                                                    f.vocab.prononciation, 
+                                                    _input, *field_to_get)
     _tmp_output[f.vocab.meaning()] = j.list_vocab_by_approximative_field(
-            f.vocab.meaning, _input, *field_to_get)
+                                                    f.vocab.meaning, 
+                                                    _input, *field_to_get)
     kanjis_in_word = search_kanjis_in_words(input)
     _perfect_match_list = []
     _approximation_data_list = []
     for key, value in _tmp_output.items() : 
         if  value : 
-            perfect_matches, approximation_list = value
-            if perfect_matches : _perfect_match_list += perfect_matches
-            if approximation_list : _approximation_data_list += approximation_list
+            perfect_matches, approximation_list=value
+            if perfect_matches : _perfect_match_list+=perfect_matches
+            if approximation_list : _approximation_data_list+=approximation_list
     searchResultsList = []
     for _perfect_match_data in _perfect_match_list : 
         word, prononciation, meaning = _perfect_match_data
-        searchResultsList.append(WordSearchResult(word, prononciation, meaning, *kanjis_in_word))
+        searchResultsList.append(
+                            WordSearchResult(word, prononciation, 
+                                            meaning, *kanjis_in_word))
     searchResultsList.append(WordListSearchResult(*_approximation_data_list))
     return searchResultsList
 
@@ -129,7 +135,8 @@ def search_kanjis_in_words(input) :
     _input = _process_search_input(input)
     if not _input or not japanese_helpers.is_word_japanese(_input) : return None
     kanjis_in_word = japanese_helpers.list_kanjis(input)
-    kanjis_in_db = [kanji for kanji in kanjis_in_word if j.check_kanjis_existence(kanji)]
+    kanjis_in_db = [kanji for kanji in kanjis_in_word 
+                    if j.check_kanjis_existence(kanji)]
     diff = set(kanjis_in_word) - set(kanjis_in_db)
     if diff : 
         log.error('following kanjis not found in DB : ')
@@ -193,7 +200,8 @@ def search_core_p(input) :
     if not core_p : return None
     word_list = j.list_word_by_core_prononciation(core_p, j.base_format.vocab.word)
     if len(word_list) > 1 : 
-        examples = j.list_word_by_core_prononciation(core_p, f.vocab.word, limit = 5) 
+        examples = j.list_word_by_core_prononciation(core_p, f.vocab.word, 
+                                                    limit = 5) 
         if examples : examples = [item[0] for item in examples]     
         return SelectorResult('core_prononciation', core_p, *examples)
     return None
