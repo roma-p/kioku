@@ -5,6 +5,7 @@ from japanese.Japanese_DB_handler import Japanese_DB_handler
 from japanese.SearchResult import WordSearchResult, WordListSearchResult, SelectorResult, SearchResult
 
 log = logging.getLogger()
+examples_limit = 5
 
 _jpdb_object = None
 def _jpdb() : 
@@ -34,7 +35,8 @@ def search_web_app(input) :
 def search_kanji(input) :
     j = _jpdb() 
     f = j.base_format
-    vocab_field_to_get = (f.vocab.word, f.vocab.prononciation, f.vocab.meaning)
+    vocab_field_to_get = (f.vocab.id, f.vocab.word, 
+                          f.vocab.prononciation, f.vocab.meaning)
     search_result_list = []
 
     q = Query().select(f.vocab, *vocab_field_to_get)
@@ -44,16 +46,15 @@ def search_kanji(input) :
     
     if perfect_matches : 
         for match in perfect_matches : 
-            word, prononciation, meaning  = match
+            id, word, prononciation, meaning  = match
             # if there is a word which consists of a single kanji, display it first.
-            search_result_list.append(WordSearchResult(word, prononciation, 
+            search_result_list.append(WordSearchResult(id, word, prononciation, 
                                                         meaning = 0))
 
     kanji_existence = j.check_kanjis_existence(input)
     if kanji_existence : 
-        # if kanji exists, display it right after pottential word in one kanji. 
-        examples = j.list_word_by_kanjis(input, f.vocab.word, limit = 5)
-        if examples : examples = [item[0] for item in examples]
+        # if kanji exists, display it right after pottential word in one kanji.
+        examples = _create_examples(j.list_word_by_kanjis, input) 
         search_result_list.append(SelectorResult('kanji', input, 
                                                     pertinence = 1, *examples))
     word_list = j.list_word_by_kanjis(input, *vocab_field_to_get)
@@ -89,7 +90,8 @@ def search_word(input) :
     """
     j = _jpdb()
     f = j.base_format
-    field_to_get = (f.vocab.word, f.vocab.prononciation, f.vocab.meaning)
+    field_to_get = (f.vocab.id, f.vocab.word,
+                    f.vocab.prononciation, f.vocab.meaning)
     _input = _process_search_input(input)
     if not _input : return None
     _tmp_output = {
@@ -119,9 +121,9 @@ def search_word(input) :
             if approximation_list : _approximation_data_list+=approximation_list
     searchResultsList = []
     for _perfect_match_data in _perfect_match_list : 
-        word, prononciation, meaning = _perfect_match_data
+        id, word, prononciation, meaning = _perfect_match_data
         searchResultsList.append(
-                            WordSearchResult(word, prononciation, 
+                            WordSearchResult(id, word, prononciation, 
                                             meaning, *kanjis_in_word))
     searchResultsList.append(WordListSearchResult(*_approximation_data_list))
     return searchResultsList
@@ -160,8 +162,7 @@ def search_categorie(input) :
     categorie_data = j.executeQuery(q)
     categorie = j.executeQuery(q)[0][0] if categorie_data else None
     if categorie :
-        examples = j.list_word_by_categorie(categorie, f.vocab.word, limit = 5)
-        if examples : examples = [item[0] for item in examples]
+        examples = _create_examples(j.list_word_by_categorie, categorie)
         return SelectorResult('categorie', categorie, *examples)
     return None
 
@@ -181,8 +182,7 @@ def search_tag(input) :
     tag_data = j.executeQuery(q)
     tag = tag_data[0][0] if tag_data else None
     if tag : 
-        examples = j.list_word_by_tag(tag, f.vocab.word, limit = 5)
-        if examples : examples = [item[0] for item in examples]
+        examples = _create_examples(j.list_word_by_tag, tag)
         return SelectorResult('tag', tag, *examples)
     return None
 
@@ -198,14 +198,20 @@ def search_core_p(input) :
     if not _input or not japanese_helpers.is_word_kana(_input) : return None
     core_p = japanese_helpers.gen_core_prononciation(_input)
     if not core_p : return None
-    word_list = j.list_word_by_core_prononciation(core_p, j.base_format.vocab.word)
+    word_list = j.list_word_by_core_prononciation(core_p, 
+                                                j.base_format.vocab.word)
     if len(word_list) > 1 : 
-        examples = j.list_word_by_core_prononciation(core_p, f.vocab.word, 
-                                                    limit = 5) 
-        if examples : examples = [item[0] for item in examples]     
+        examples = _create_examples(j.list_word_by_core_prononciation, core_p) 
         return SelectorResult('core_prononciation', core_p, *examples)
     return None
-    
+
+def _create_examples(jpdb_method, input):
+    global examples_limit
+    j = _jpdb()
+    f = j.base_format
+    field_to_get = (f.vocab.id, f.vocab.word)
+    return jpdb_method(input, *field_to_get, limit = examples_limit)
+
 def _process_search_input(input) :
     """
     checking consistency of input recevied from search field

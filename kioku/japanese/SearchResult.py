@@ -8,7 +8,10 @@ class SearchResult() :
     def add_search_result(search_result) : 
         self.results_by_pertinence.append(search_result)
 
-    def get_ordered_search_result(self) : return sorted(self.results_by_pertinence, key = lambda x : x.pertinence)
+    def get_ordered_search_result(self) : 
+        return sorted(
+            self.results_by_pertinence, 
+            key = lambda x : x.pertinence)
 
     def __repr__(self) : 
         _str = 'SearchResult for input ' + self.search_input
@@ -27,16 +30,18 @@ class SingleSearchResult() :
         # 3 : low
 
 class WordSearchResult(SingleSearchResult) : 
-    def __init__(self, word, prononciation, meaning, pertinence = 3, *kanjis):
+    def __init__(self, id, word, prononciation, meaning, pertinence = 3, *kanjis):
         super().__init__(pertinence)
+        self.id   = id
         self.word = word 
         self.prononciation = prononciation 
         self.meaning = meaning 
-        self.kanjis = kanjis
+        self.kanjis  = kanjis
 
     def __repr__(self) : 
         _str =  'WordSearchResult of pertinence = ' + str(self.pertinence)
         _str += ', word : ' + self.word
+        _str += ', id : ' + self.id
         _str += ', prononciation : ' + self.prononciation
         _str += ', meaning : ' + str(self.meaning)
         _str += ', kanjis are : '
@@ -63,20 +68,22 @@ class WordListSearchResult(SingleSearchResult) :
 
     def _creating_word(self, *words_data_list) :
         r = []
-        for (word, prononciation, meaning) in words_data_list : 
-            word_item = WordItem(word, prononciation, meaning)
+        for (id, word, prononciation, meaning) in words_data_list : 
+            word_item = WordItem(id, word, prononciation, meaning)
             r.append(word_item)
         return r
 
 # useless is it not ?
 class WordItem() : 
-    def __init__(self, word, prononciation, meaning) : 
+    def __init__(self, id, word, prononciation, meaning) : 
+        self.id  = id
         self.word = word 
         self.prononciation = prononciation
         self.meaning = meaning
 
     def __repr__(self) : 
         _str = 'word : ' + self.word 
+        _str += ', id : ' + self.id
         _str += ', prononciation : ' + self.prononciation
         _str += ', meaning : ' + self.meaning + '; '
         return _str

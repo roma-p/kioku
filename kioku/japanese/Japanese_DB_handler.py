@@ -24,7 +24,7 @@ class  Japanese_DB_handler(DB_handler):
 
     ## TODO : correct with copy paste madness. 
 
-    def list_word_by_kanjis(self, kanji, *fieldToGet, limit = None) : 
+    def list_word_by_kanjis(self, kanji, *fieldToGet, limit = None): 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
@@ -35,7 +35,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_core_prononciation(self, core_p, *fieldToGet, limit=None) : 
+    def list_word_by_core_prononciation(self, core_p, *fieldToGet, limit=None): 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
@@ -45,7 +45,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_categorie(self, categorie_name, *fieldToGet, limit=None) : 
+    def list_word_by_categorie(self, categorie_name, *fieldToGet, limit=None): 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
@@ -55,7 +55,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_tag(self, tag_name, *fieldToGet, limit = None) : 
+    def list_word_by_tag(self, tag_name, *fieldToGet, limit = None): 
         f = self.base_format
         if not self._check_field_in_vocab(fieldToGet) : return None
         q = Query().select(f.vocab, *fieldToGet)
@@ -65,13 +65,13 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def _check_field_in_vocab(self, fieldTocheck) : 
+    def _check_field_in_vocab(self, fieldTocheck): 
         err_set = set()
         if not fieldTocheck : 
             log.error('no field to select!')
             return False
         for field in fieldTocheck :
-            if field.parent_table() != self.base_format.vocab() : 
+            if field.parent_table() != self.base_format.vocab(): 
                 err_set.add(field)
         if err_set : 
             log.error('following fields are not in vocab table, cant proceed')
@@ -82,7 +82,7 @@ class  Japanese_DB_handler(DB_handler):
 
     # FETCHING SINGLE WORD INFO ***********************************************
 
-    def get_word_info(self, word) : 
+    def get_word_info(self, id): 
 
         f = self.base_format
         field_to_get = (
@@ -99,7 +99,7 @@ class  Japanese_DB_handler(DB_handler):
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
         q.join_left(f.vocab.categorie, f.categories.id)
         q.join_left(f.vocab.tag, f.tags.id)
-        q.where().equal(f.vocab.word , word)
+        q.where().equal(f.vocab.id , id)
 
         data = self.executeQuery(q)
 
@@ -107,6 +107,7 @@ class  Japanese_DB_handler(DB_handler):
         else : data = data[0] # words are unique, only one instance possible. 
 
         output = {
+            'id'   : id,
             'word' : data[0],
             'prononciation' : data[1],
             'meaning' : data[2],
@@ -117,11 +118,11 @@ class  Japanese_DB_handler(DB_handler):
             'tag' : data[7]
         }
 
-        output['kanjis'] = self.get_kankis_in_word(word)
+        output['kanjis'] = self.get_kankis_in_word(data[0])
 
         return output
 
-    def get_kankis_in_word(self, word) : 
+    def get_kankis_in_word(self, word): 
 
         f = self.base_format
         q = Query().select(f.vocab, f.kanjis.name)
@@ -137,7 +138,7 @@ class  Japanese_DB_handler(DB_handler):
 
     # LISTING CRITERIUM ********************************************************
 
-    def list_kanjis_by_usage(self, limit = None, offset = None) : 
+    def list_kanjis_by_usage(self, limit = None, offset = None): 
         f = self.base_format
         q = Query().select(f.word_kanjis, f.kanjis.name,
                             count_field=f.word_kanjis.word_id)
@@ -151,7 +152,7 @@ class  Japanese_DB_handler(DB_handler):
         #q = Query().select(f.kanjis, f.kanjis.name).count(f.word_kanjis)
         #q,
 
-    def list_categorie_by_usage(self, limit = None, offset = None) : 
+    def list_categorie_by_usage(self, limit = None, offset = None): 
         f = self.base_format
         q = Query().select(f.vocab, f.categories.name, 
                             count_field=f.vocab.categorie)
@@ -174,7 +175,7 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data        
 
-    def list_core_p_by_usage(self, limit = None, offset = None) :
+    def list_core_p_by_usage(self, limit = None, offset = None):
         f = self.base_format
         q = Query().select(f.vocab, f.core_prononciations.name, 
                             count_field=f.vocab.id)
@@ -187,7 +188,7 @@ class  Japanese_DB_handler(DB_handler):
         return data        
 
     def list_vocab_by_approximative_field(self, key_field, key_value, 
-                                            *field_to_get) : 
+                                            *field_to_get): 
         """
         retrieve data from vocab table, where its key_field IS or CONTAINS key_value
         (but does not auto correct typo, yet)
@@ -278,27 +279,27 @@ class  Japanese_DB_handler(DB_handler):
 
     # CHECKING EXISTENCE ******************************************************
 
-    def check_categorie_existence(self, categorie_name) : 
-        if categorie_name in dict(self.list_categorie_by_usage()).keys() : 
+    def check_categorie_existence(self, categorie_name): 
+        if categorie_name in dict(self.list_categorie_by_usage()).keys(): 
             return True
         else : return False
 
-    def check_tag_existence(self, tag_name) : 
+    def check_tag_existence(self, tag_name): 
         if tag_name in dict(self.list_tag_by_usage()).keys() : 
             return True
         else : return False
 
-    def check_kanjis_existence(self, kanjis_name) : 
+    def check_kanjis_existence(self, kanjis_name): 
         if kanjis_name in dict(self.list_kanjis_by_usage()).keys() : 
             return True
         else : return False
 
-    def check_core_p_existence(self, core_p_name) : 
+    def check_core_p_existence(self, core_p_name): 
         if core_p_name in dict(self.list_core_p_by_usage()).keys() : 
             return True
         else : return False
 
-    def check_word_existence(self, word) : 
+    def check_word_existence(self, word): 
         if not japanese_helpers.is_word_japanese(word) : return False
         q = Query().select(self.base_format.vocab, self.base_format.vocab.word)
         q.where().equal(self.base_format.vocab.word, word)
@@ -308,17 +309,17 @@ class  Japanese_DB_handler(DB_handler):
     # ADDIND DATA *************************************************************
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    def add_categories(self, *categorie_list, silent = False) : 
+    def add_categories(self, *categorie_list, silent = False): 
         table = self.base_format.categories
         field = self.base_format.categories.name
         self._add_to_db_index(table, field, categorie_list, silent)
 
-    def add_tags(self, *tag_list, silent = False) :
+    def add_tags(self, *tag_list, silent = False):
         table = self.base_format.tags
         field = self.base_format.tags.name
         self._add_to_db_index(table, field, tag_list, silent)
 
-    def add_kanjis(self, *kanjis_list, silent = False) :
+    def add_kanjis(self, *kanjis_list, silent = False):
         table = self.base_format.kanjis
         field = self.base_format.kanjis.name
         self._add_to_db_index(table, field, kanjis_list, silent)
@@ -346,7 +347,7 @@ class  Japanese_DB_handler(DB_handler):
 
     # TODO !! empty tag / categories shant be added to database. 
 
-    def add_vocab(self, *vocab_list, mendatory_prononciation = True) :
+    def add_vocab(self, *vocab_list, mendatory_prononciation = True):
         data_order = ('word', 'prononciation', 'core_prononciation',
             'meaning','example','categorie','tag')
 
@@ -375,7 +376,8 @@ class  Japanese_DB_handler(DB_handler):
             valid = True
             # 1 : first : checking validity of single data.
             if not word : 
-                log.error('missing word for entries with prononciation : '+ str(prononciation))
+                log.error('missing word for entries with prononciation : '
+                    + str(prononciation))
                 error_list.append(vocab)
                 valid = False 
             if not meaning : 
@@ -386,11 +388,13 @@ class  Japanese_DB_handler(DB_handler):
             #     log.error("can't add word " + word + " since it doesn't have categorie.")
             #     error_list.append(vocab)
             if categorie and categorie not in existing_cat_tuple : 
-                log.error("can't add "+ word + ", categorie " + categorie + " does not exists.")
+                log.error("can't add "+ word + ", categorie " 
+                    + categorie + " does not exists.")
                 error_list.append(vocab)
                 valid = False
             if tag and tag not in existing_tag_tuple : 
-                log.error("can't add "+ word + ", tags " + tag + " does not exists.")
+                log.error("can't add "+ word + ", tags " + tag
+                    + " does not exists.")
                 error_list.append(vocab)
                 valid = False
             if word in word_set : 
@@ -508,18 +512,21 @@ class  Japanese_DB_handler(DB_handler):
 
         return True
 
-    def _get_index_as_dict(self, tableObject, field_to_set_as_key = None) :
+    def _get_index_as_dict(self, tableObject, field_to_set_as_key = None):
         if not field_to_set_as_key : field_to_set_as_key = tableObject.name 
         item_to_get = [field_to_set_as_key, tableObject.id]
         data_as_dict = {id : name for (id, name) in 
                             self.select(tableObject, *item_to_get)}
         return data_as_dict
 
+    def update_word(self, word_id, **updadted_fielfs): None
+
+    def add_single_word(self, *vocab_data): None
 
     # DB STAT *****************************************************************
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    def get_db_stat(self) : 
+    def get_db_stat(self): 
         row_limit = 10 
         stat_dict = {}
         stat_dict['vocab_number'] = self.count(self.base_format.vocab)

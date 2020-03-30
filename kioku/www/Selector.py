@@ -56,7 +56,7 @@ class Categorie(Selector) :
         jpDB = Japanese_DB_handler()
         selector_id = selector_id if jpDB.check_categorie_existence(selector_id) else None
         if selector_id : 
-            item_to_get = www_config.get_vocab_format()
+            item_to_get = www_config.get_vocab_format_including_id()
             vocab_list = jpDB.list_word_by_categorie(selector_id, *item_to_get)
             return vocab_list
 
@@ -77,8 +77,7 @@ class Tag(Selector) :
         if selector_id : 
             # item_to_get = www_config.get_vocab_format()
             f = Japanese_DB_handler().base_format
-            item_to_get = (f.vocab.word,f.vocab.prononciation,f.vocab.meaning,f.vocab.example)
-
+            item_to_get = www_config.get_vocab_format_including_id()
             vocab_list = jpDB.list_word_by_tag(selector_id, *item_to_get)
             return vocab_list
 
@@ -97,7 +96,7 @@ class Kanjis(Selector) :
         jpDB = Japanese_DB_handler()
         selector_id = selector_id if jpDB.check_kanjis_existence(selector_id) else None
         if selector_id : 
-            item_to_get = www_config.get_vocab_format()
+            item_to_get = www_config.get_vocab_format_including_id()
             vocab_list = jpDB.list_word_by_kanjis(selector_id, *item_to_get)
             return vocab_list
 
@@ -116,7 +115,7 @@ class Core_P(Selector) :
         jpDB = Japanese_DB_handler()
         selector_id = selector_id if jpDB.check_core_p_existence(selector_id) else None
         if selector_id : 
-            item_to_get = www_config.get_vocab_format()
+            item_to_get = www_config.get_vocab_format_including_id()
             vocab_list = jpDB.list_word_by_core_prononciation(selector_id, *item_to_get)
             return vocab_list
 
