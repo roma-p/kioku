@@ -64,15 +64,19 @@ def selector_single_page(selector, selector_id):
     if not selector : return 'prout' 
     vocab_list = selector.get_vocab_from_selector(selector_id)
 
-    name = application_title + ', ' + selector.selector_type + ': ' + selector_id
+    selector_name = selector.get_selector_name_from_id(selector_id)
+
+    name = application_title + ', ' + selector.selector_type + ': ' + selector_name
     css_file = main_css 
     
     body = header_kioku()
-    body += header_selector(selector, selector_id)
+    body += header_selector(selector, selector_name)
     body += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
 
     data = page_base_structure(name, css_file, body)
     return data
+
+#def tag_edit_page(selector_id)
 
 @app.route('/words')
 def words_page(): 
@@ -104,7 +108,6 @@ def word_page(word_id):
 
 #@app.route('/words/edit/<word_id>')
 #def word_edit_page(word_id): 
-
 
 @app.route('/search', method = 'GET')
 def search_page(): 
@@ -143,7 +146,6 @@ def page_base_structure(page_name, css_file, body) :
     return template('base_structure', page_name = page_name, 
                     css_file = css_file, body = body)
 
-
 # contains the app name and a search field. 
 @view('header_kioku')
 @view('link')
@@ -181,13 +183,19 @@ def list_vocabulary(vocab_format, vocab_list) :
                     vocab_list = linked_vocab_id_list)
 
 @view('list_selector_id')
-def list_selector_id(selector, number, selector_id_list) :
+def list_selector_id(selector, number, selector_list) :
 
     linked_selector_id_list = []
-    for selector_id, selector_id_occurence in selector_id_list : 
-        linked_selector_id_list.append((
-            create_selector_id_link(selector, selector_id) if selector_id else selector_id,
-            selector_id_occurence))
+    for selector_name, selector_id, selector_id_occurence in selector_list :
+        if selector_name : 
+            link = create_selector_id_link(selector, selector_id, selector_name)
+        else : 
+            link = selector_name
+
+        linked_selector_id_list.append((link, selector_id_occurence))
+
+        #linked_selector_id_list.append((
+        #    create_selector_id_link(selector, selector_id) if selector_id else selector_id,selector_id_occurence))
 
     return template('list_selector_id', selector = selector.sub_url, 
         number = number, selector_id_list = linked_selector_id_list)
@@ -196,17 +204,18 @@ def list_selector_id(selector, number, selector_id_list) :
 def word_page_view(word_data) :
 
     if word_data['kanjis'] : 
-        kanjis_data = [create_selector_id_link(Kanjis, kanji) for kanji in 
-                        word_data['kanjis'] if kanji]
+        kanjis_data = [create_selector_id_link(Kanjis, kanji_id, kanji_name) 
+                        for (kanji_id, kanji_name) in word_data['kanjis']]
     else : kanjis_data = None
 
-    if word_data['tag'] and len(word_data['tag']): #TODO surdegueu, pb dans la BDD
-        tag_data = create_selector_id_link(Tag, word_data['tag'])
+    if word_data['tag'] and len(word_data['tag']):               #TODO surdegueu, pb dans la BDD
+        tag_id, tag_name = word_data['tag']
+        tag_data = create_selector_id_link(Tag, tag_id, tag_name)
     else : tag_data = None
 
     if word_data['categorie']: 
-        categorie_data = create_selector_id_link(Categorie, 
-                                                word_data['categorie'])
+        cat_id, cat_name = word_data['categorie']
+        categorie_data = create_selector_id_link(Categorie, cat_id, cat_name)
     else : categorie_data = None
 
     return template(
@@ -221,9 +230,9 @@ def word_page_view(word_data) :
         )
 
 @view('link')
-def create_selector_id_link(selector, selector_id) : 
+def create_selector_id_link(selector, selector_id, selector_name): 
     url = selector.gen_url_to_selector_id(selector_id)
-    return template('link', text=selector_id, url=url)
+    return template('link', text=selector_name, url=url)
 
 @view('link')
 def create_selector_type_link(selector) : 

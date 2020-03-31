@@ -74,7 +74,7 @@ class  Japanese_DB_handler(DB_handler):
         return data
 
     def get_item_by_id(self, table_object, id, *fieldToGet):
-        if not self._check_field(fieldTocheck, table_object): return None
+        if not self._check_field(fieldToGet, table_object): return None
         q = Query().select(table_object, *fieldToGet)
         q.where().equal(table_object.id, id)
         data = self.executeQuery(q)
@@ -104,9 +104,12 @@ class  Japanese_DB_handler(DB_handler):
             f.vocab.prononciation, 
             f.vocab.meaning, 
             f.vocab.example, 
-            f.vocab.date, 
+            f.vocab.date,
+            f.vocab.core_prononciation,
             f.core_prononciations.name, 
-            f.categories.name, 
+            f.vocab.categorie,
+            f.categories.name,
+            f.vocab.tag,
             f.tags.name)
         q = Query().select(f.vocab, *field_to_get)
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
@@ -126,12 +129,19 @@ class  Japanese_DB_handler(DB_handler):
             'meaning' : data[2],
             'example' : data[3],
             'date' : data[4],
-            'core_prononciation' : data[5],
-            'categorie' : data[6],
-            'tag' : data[7]
+            'core_prononciation' : (data[5], data[6]),
+            'categorie' : (data[7], data[8]),
+            'tag' : (data[9], data[10])
         }
 
-        output['kanjis'] = self.get_kanjis_in_word(data[0])
+        q = Query().select(f.vocab, f.kanjis.id, f.kanjis.name)
+        q.join_left(f.vocab.id, f.word_kanjis.word_id)
+        q.join_left(f.word_kanjis.kanji_id, f.kanjis.id)
+        q.where().equal(f.vocab.id, id)
+        data = self.executeQuery(q)
+        data = tuple(set(data))
+
+        output['kanjis'] = data
 
         return output
 
@@ -151,9 +161,13 @@ class  Japanese_DB_handler(DB_handler):
 
     # LISTING CRITERIUM ********************************************************
 
-    def list_kanjis_by_usage(self, limit = None, offset = None): 
+    def list_kanjis_by_usage(self, limit=None, offset=None, include_id=False): 
         f = self.base_format
-        q = Query().select(f.word_kanjis, f.kanjis.name,
+
+        fields = [f.kanjis.name]
+        if include_id : fields.append(f.kanjis.id)
+
+        q = Query().select(f.word_kanjis, *fields,
                             count_field=f.word_kanjis.word_id)
         q.join_left(f.word_kanjis.kanji_id, f.kanjis.id)
         q.group_by(f.word_kanjis.kanji_id)
@@ -165,9 +179,13 @@ class  Japanese_DB_handler(DB_handler):
         #q = Query().select(f.kanjis, f.kanjis.name).count(f.word_kanjis)
         #q,
 
-    def list_categorie_by_usage(self, limit = None, offset = None): 
+    def list_categorie_by_usage(self, limit=None, offset=None, include_id=False): 
         f = self.base_format
-        q = Query().select(f.vocab, f.categories.name, 
+
+        fields = [f.categories.name]
+        if include_id : fields.append(f.categories.id)
+
+        q = Query().select(f.vocab, *fields, 
                             count_field=f.vocab.categorie)
         q.join_left(f.vocab.categorie, f.categories.id)
         q.group_by(f.vocab.categorie)
@@ -177,9 +195,14 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_tag_by_usage(self, limit = None, offset = None) :
+    def list_tag_by_usage(self, limit=None, offset=None, include_id=False) :
         f = self.base_format
-        q = Query().select(f.vocab, f.tags.name, count_field = f.vocab.id)
+
+        fields = [f.tags.name]
+        if include_id : fields.append(f.tags.id)
+
+        q = Query().select(f.vocab, *fields, 
+                            count_field = f.vocab.id)
         q.join_left(f.vocab.tag, f.tags.id)
         q.group_by(f.vocab.tag)
         q.order_by_count(f.vocab.id).desc()
@@ -188,9 +211,13 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data        
 
-    def list_core_p_by_usage(self, limit = None, offset = None):
+    def list_core_p_by_usage(self, limit=None, offset=None, include_id=False):
         f = self.base_format
-        q = Query().select(f.vocab, f.core_prononciations.name, 
+
+        fields = [f.core_prononciations.name]
+        if include_id : fields.append(f.core_prononciations.id)
+
+        q = Query().select(f.vocab, *fields, 
                             count_field=f.vocab.id)
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
         q.group_by(f.vocab.core_prononciation)

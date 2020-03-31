@@ -8,7 +8,14 @@ from DB.DB_format import DB_format
 def get_baseFormat() : return baseFormat
 
 # TODO : DELETE THIS, WHERE TO PUT IT? 
-def get_vocab_required_col() : return ('word', 'prononciation', 'tag', 'categorie', 'example', 'meaning')
+def get_vocab_required_col() : 
+	return (
+		'word', 
+		'prononciation', 
+		'tag', 
+		'categorie', 
+		'example', 
+		'meaning')
 
 simple_int_field = {r.type() : r.type_integer()}
 not_null_int_field = {
