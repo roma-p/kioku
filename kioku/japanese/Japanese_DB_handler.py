@@ -4,7 +4,7 @@ from japanese import japanese_dataBaseFormat
 import configuration as configuration
 from DB.Query import Query
 from japanese import japanese_helpers
-
+from japanese.VocabContainer import VocabContainer
 
 log = logging.getLogger()
 
@@ -26,7 +26,7 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_word_by_kanjis(self, kanji, *fieldToGet, limit = None): 
         f = self.base_format
-        if not self._check_field_in_vocab(fieldToGet) : return None
+        if not self._check_field(fieldToGet, f.vocab) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.id, f.word_kanjis.word_id)
         q.join_left(f.word_kanjis.kanji_id , f.kanjis.id)
@@ -37,7 +37,7 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_word_by_core_prononciation(self, core_p, *fieldToGet, limit=None): 
         f = self.base_format
-        if not self._check_field_in_vocab(fieldToGet) : return None
+        if not self._check_field(fieldToGet, f.vocab) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
         q.where().equal(f.core_prononciations.name, core_p)
@@ -47,7 +47,7 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_word_by_categorie(self, categorie_name, *fieldToGet, limit=None): 
         f = self.base_format
-        if not self._check_field_in_vocab(fieldToGet) : return None
+        if not self._check_field(fieldToGet, f.vocab) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.categorie, f.categories.id)
         q.where().equal(f.categories.name, categorie_name)
@@ -57,7 +57,7 @@ class  Japanese_DB_handler(DB_handler):
 
     def list_word_by_tag(self, tag_name, *fieldToGet, limit = None): 
         f = self.base_format
-        if not self._check_field_in_vocab(fieldToGet) : return None
+        if not self._check_field(fieldToGet, f.vocab) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.tag, f.tags.id)
         q.where().equal(f.tags.name, tag_name)
@@ -65,18 +65,24 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def _check_field_in_vocab(self, fieldTocheck): 
+    def get_item_by_id(self, table_object, id, *fieldToGet):
+        if not self._check_field(fieldTocheck, table_object): return None
+        q = Query().select(table_object, *fieldToGet)
+        q.where().equal(table_object.id, id)
+        data = self.executeQuery(q)
+        if data : return data[0]
+
+    def _check_field(self, fieldTocheck, table_object): 
         err_set = set()
         if not fieldTocheck : 
             log.error('no field to select!')
             return False
         for field in fieldTocheck :
-            if field.parent_table() != self.base_format.vocab(): 
+            if field.parent_table() != table_object(): 
                 err_set.add(field)
         if err_set : 
             log.error('following fields are not in vocab table, cant proceed')
-            for field in err_set : 
-                log.error(field())
+            for field in err_set : log.error(field())
             return False
         return True
 
@@ -93,8 +99,7 @@ class  Japanese_DB_handler(DB_handler):
             f.vocab.date, 
             f.core_prononciations.name, 
             f.categories.name, 
-            f.tags.name
-            )
+            f.tags.name)
         q = Query().select(f.vocab, *field_to_get)
         q.join_left(f.vocab.core_prononciation, f.core_prononciations.id)
         q.join_left(f.vocab.categorie, f.categories.id)
@@ -118,11 +123,11 @@ class  Japanese_DB_handler(DB_handler):
             'tag' : data[7]
         }
 
-        output['kanjis'] = self.get_kankis_in_word(data[0])
+        output['kanjis'] = self.get_kanjis_in_word(data[0])
 
         return output
 
-    def get_kankis_in_word(self, word): 
+    def get_kanjis_in_word(self, word): 
 
         f = self.base_format
         q = Query().select(f.vocab, f.kanjis.name)
@@ -188,7 +193,7 @@ class  Japanese_DB_handler(DB_handler):
         return data        
 
     def list_vocab_by_approximative_field(self, key_field, key_value, 
-                                            *field_to_get): 
+                                        *field_to_get): 
         """
         retrieve data from vocab table, where its key_field IS or CONTAINS key_value
         (but does not auto correct typo, yet)
@@ -324,7 +329,8 @@ class  Japanese_DB_handler(DB_handler):
         field = self.base_format.kanjis.name
         self._add_to_db_index(table, field, kanjis_list, silent)
 
-    def _add_to_db_index(self, table, field, list_of_index_entries, 
+    def _add_to_db_index(self, table, field, 
+                        list_of_index_entries, 
                         silent = False):
 
         data_order = (field,)
@@ -341,6 +347,43 @@ class  Japanese_DB_handler(DB_handler):
             for data in duplicate_set: 
                 log.warning(data[0] + ' already exists.') 
         self.add(table, data_order, *tuple(valid_set))
+
+    def edit_tag(self, previous_name, new_name): 
+        if previous_name not in self.list_tag_by_usage(): 
+            log.error("no tag found with name: "+previous_name)
+            return False
+        self.update(f.tags, f.tags.name, 
+            new_name, name=previous_name)
+        return True
+
+    def edit_cat(self, previous_name, new_name): 
+        if previous_name not in self.list_categorie_by_usage(): 
+            log.error("no categorie found with name: "+previous_name)
+            return False
+        self.update(f.categories, f.categories.name, 
+            new_name, name=previous_name)
+        return True
+
+    def del_tag(self, tag_name): 
+        f = self.base_format
+        return _del_tag_or_cat(f.vocab.tag, f.tags, tag_name)
+
+    def del_cat(self, cat_name): 
+        f = self.base_format
+        return _del_tag_or_cat(f.vocab.categorie, f.categories, cat_name)
+
+    def _del_tag_or_cat(self, vocab_field, table, item_name): 
+        f = self.base_format
+        q = Query().select(table, table.id)
+        q.where().equal(table.name, item_name)
+        data = self.executeQuery(q)
+        if not data : 
+            log.error("no item named "+item_name+" found in "+ table())
+            return False
+        item_id = data[0][0]
+        self.delete(table, name=item_name)
+        self.update(f.vocab, vocab_field, None, id=item_id)
+        return True
 
     # data expected : 
     # ('word', 'prononciation', 'meaning','categorie','tag', 'example')
@@ -363,77 +406,44 @@ class  Japanese_DB_handler(DB_handler):
         #    else : listing kanjis and generating core pronomciation.
         #           and listing them to update kanjis/core_prononciation tables 
         error_list = []
-        warning_error_list = []
+        warning_list = []
 
-        vocab_tmp_entries_list = []
+        vocab_container_list = []
         kanjis_detected_set = set()
         core_p_detected_set = set()
         word_set = set()
 
-
         for vocab in vocab_list : 
             word, prononciation, meaning, categorie, tag, example = vocab
-            valid = True
-            # 1 : first : checking validity of single data.
-            if not word : 
-                log.error('missing word for entries with prononciation : '
-                    + str(prononciation))
+
+            status = self._add_word_basic_checks(
+                existing_cat_tuple,
+                existing_tag_tuple,
+                word, meaning, 
+                categorie, tag)
+
+            if not status : 
                 error_list.append(vocab)
-                valid = False 
-            if not meaning : 
-                log.error('missing meaning for word : '+ str(word))
-                error_list.append(vocab)
-                valid = False
-            # if not categorie : 
-            #     log.error("can't add word " + word + " since it doesn't have categorie.")
-            #     error_list.append(vocab)
-            if categorie and categorie not in existing_cat_tuple : 
-                log.error("can't add "+ word + ", categorie " 
-                    + categorie + " does not exists.")
-                error_list.append(vocab)
-                valid = False
-            if tag and tag not in existing_tag_tuple : 
-                log.error("can't add "+ word + ", tags " + tag
-                    + " does not exists.")
-                error_list.append(vocab)
-                valid = False
-            if word in word_set : 
+            elif word in word_set : 
                 log.error('duplicate item found : word ' + word + '.' )
-                warning_error_list.append(vocab)
-                valid = False
+                warning_list.append(vocab)
+            else : 
 
-            # 2 generating core pronomciation, extracting kanjis. 
-            if valid :
-                # generating core prononciation
-                # if not prononciation : hiragana_word = word 
-                # else : hiragana_word = prononciation
-                word_set.add(word)
-                hiragana_word = word if not prononciation else prononciation # TODO word?
-                hiragana_word = japanese_helpers.convertKanaToHiragana(hiragana_word)
-                valid_hiragana = japanese_helpers.is_word_kana(hiragana_word)
-                if not valid_hiragana : 
-                    log.error('prononciation / word not in kana : '+ str(word))
+                vocab_container = self._add_word_gen_vocab_container(
+                    word, meaning, prononciation, 
+                    categorie, tag, example)
+
+                if not vocab_container:
                     error_list.append(vocab)
-                    if mendatory_prononciation : 
-                        error_list.append(vocab)
-                    core_prononciation = None
-                else : 
-                    core_prononciation = japanese_helpers.gen_core_prononciation(hiragana_word)
-                    core_p_detected_set.add(core_prononciation)
+                else: 
+                    word_set.add(word)
+                    core_p_detected_set.add(vocab_container.core_P)
+                    kanjis_detected_set.update(set(vocab_container.kanjis))
+                    vocab_container_list.append(vocab_container)
 
-                # listing kanjis present in the word
-                kanjis_tuple = japanese_helpers.list_kanjis(word)
-                kanjis_detected_set.update(set(kanjis_tuple))
-                vocab_tmp_entry = (
-                                    word, prononciation, core_prononciation,
-                                    meaning, example, categorie, tag, 
-                                    kanjis_tuple
-                                    )
-                vocab_tmp_entries_list.append(vocab_tmp_entry)
-
-        if warning_error_list : 
+        if warning_list : 
             log.warning('following entries were ignored because of an error : ')
-            for warning in warning_error_list : 
+            for warning in warning_list : 
                 log.warning(str(warning))
 
         if error_list: 
@@ -450,11 +460,9 @@ class  Japanese_DB_handler(DB_handler):
                                         self.base_format.core_prononciations, 
                                         self.base_format.core_prononciations.name))
 
-        kanjis_to_add_tuple = tuple([(k, ) for k in 
-                                        kanjis_detected_set 
+        kanjis_to_add_tuple = tuple([(k, ) for k in kanjis_detected_set 
                                         - existing_kanjis_set])
-        core_p_to_add_list = tuple([(p, )for p in 
-                                        core_p_detected_set 
+        core_p_to_add_list = tuple([(p, ) for p in core_p_detected_set 
                                         - existing_core_p_set])
 
         self.add(self.base_format.kanjis, 
@@ -471,46 +479,206 @@ class  Japanese_DB_handler(DB_handler):
         existing_tag_dict = self._get_index_as_dict(self.base_format.tags)
         existing_core_p_dict = self._get_index_as_dict(self.base_format.core_prononciations)
         existing_kanjis_dict = self._get_index_as_dict(self.base_format.kanjis)
+        word_id_dict = self._get_index_as_dict(self.base_format.vocab, 
+                                               self.base_format.vocab.word)
 
         vocab_final_entries_list = []
         word_kanjis_tmp_entries_dict = {} # < word > : list of kanjis id. 
 
         # generating final entries for table vocab and tmp entries for word kanjis. 
-        for tmp_entry in vocab_tmp_entries_list : 
-            word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_list = tmp_entry
-            core_prononciation_id = existing_core_p_dict[core_prononciation]
-            tag_id = existing_tag_dict[tag] if tag else None # TODO ; shall be equal to None. 
-            categorie_id = existing_cat_dict[categorie] if categorie else None
-            word_kanjis_tmp_entries_dict[word] = [existing_kanjis_dict[kanji] 
-                                                    for kanji in kanjis_list]
-            vocab_final_entries_list.append(
-                                        (word, prononciation, 
-                                        core_prononciation_id, meaning, 
-                                        example, categorie_id, tag_id)
-                                    )
+        for vc in vocab_container_list : 
+            #word, prononciation, core_prononciation, meaning, example, categorie, tag, kanjis_list = tmp_entry
+            core_p_id = existing_core_p_dict[vc.core_p]
+            tag_id    = existing_tag_dict[vc.tag]       if vc.tag else None         # TODO ; shall be equal to None. 
+            cat_id    = existing_cat_dict[vc.categorie] if vc.categorie else None
+
+            word_kanjis_tmp_entries_dict[vc.word] = [existing_kanjis_dict[kanji] 
+                                                        for kanji in vc.kanjis]
+            vocab_final_entries_list.append((
+                vc.word,
+                vc.prononciation, 
+                core_p_id,
+                vc.meaning, 
+                vc.example,
+                cat_id,
+                tag_id))
 
         # 5) updating vocab table. 
         data_order = (
-            'word', 'prononciation', 'core_prononciation',
-            'meaning','example','categorie','tag')
+            'word',
+            'prononciation',
+            'core_prononciation',
+            'meaning',
+            'example',
+            'categorie',
+            'tag')
         
-        self.add(self.base_format.vocab , data_order, *vocab_final_entries_list)
+        self.add(
+            self.base_format.vocab,
+            data_order,
+            *vocab_final_entries_list)
 
         # 6) updating word_kanjis tables. 
-        word_id_dict = self._get_index_as_dict(self.base_format.vocab, 
-                                                self.base_format.vocab.word)
+
         word_kanjis_final_entries_list = []
         for word, kanjis_id_tuple in word_kanjis_tmp_entries_dict.items() : 
             for kanji_id in kanjis_id_tuple : 
                 word_kanjis_final_entries_list.append(
                                                 (word_id_dict[word],
-                                                    kanji_id))
+                                                kanji_id))
         data_order = (self.base_format.word_kanjis.word_id, 
                       self.base_format.word_kanjis.kanji_id)
-        self.add(self.base_format.word_kanjis , data_order, *
-            word_kanjis_final_entries_list)
+        self.add(
+            self.base_format.word_kanjis,
+            data_order,
+            *word_kanjis_final_entries_list)
+        return True
+
+    def add_single_word(self, word, prononciation, meaning, 
+                        example   = None, 
+                        categorie = None, 
+                        tag       = None):
+        return self.add_vocab((
+            word,
+            prononciation, 
+            meaning, 
+            categorie, 
+            tag, 
+            example))
+
+    # word_id : integer id of vocab table.
+    def update_word(self, word_id, **updated_fields):
+        f = self.base_format
+        
+        valid_fields = (
+            f.vocab.word, 
+            f.vocab.prononciation,
+            f.vocab.meaning, 
+            f.vocab.categorie, 
+            f.vocab.tag, 
+            f.vocab.example)
+
+        word_data = self.get_item_by_id(
+            f.vocab, 
+            word_id, 
+            *valid_fields)
+
+        if not word_data: 
+            log.error('no word found at id '+str(word_id))
+            return False
+
+        updated_data = {}
+        for field, orig_data in zip(valid_fields, word_data): 
+            if field() in updated_fields.keys(): 
+                updated_data[field] = updated_fields[field()]
+            else : 
+                updated_data[field] = orig_data
+
+        existing_cat_tuple = self.list(self.base_format.categories, 
+                                        self.base_format.categories.name)
+        existing_tag_tuple = self.list(self.base_format.tags, 
+                                        self.base_format.tags.name)            
+
+        if not self._add_word_basic_checks(
+                existing_cat_tuple,
+                existing_tag_tuple, 
+                updated_data[f.vocab.word], 
+                updated_data[f.vocab.meaning],
+                updated_data[f.vocab.categorie],
+                updated_data[f.vocab.tag]) : 
+            log.error("can't update word info for " + str(word_id))
+            return False
+
+        err_mess = 'error during update process of word at id '+ str(word_id)
+
+        if not self.del_word(word_id) : 
+            log.error(err_mess)
+            return False
+
+        if not self.add_single_word(
+                updated_data[f.vocab.word], 
+                updated_data[f.vocab.prononciation], 
+                updated_data[f.vocab.meaning],
+                updated_data[f.vocab.categorie],
+                updated_data[f.vocab.tag],
+                updated_data[f.vocab.example]): 
+            log.error(err_mess)
+            return False
 
         return True
+
+    # word_id = int, id of vocab id. 
+    def del_word(self, word_id):
+        f = self.base_format
+        word_data = self.get_item_by_id(f.vocab, word_id, f.vocab.word)
+        if not word_data: 
+            log.error('no word found at id '+str(word_id))
+            return False
+        self.delete(f.vocab, id=word_id)
+        self.delete(f.word_kanjis, word_id=word_id)
+        return True
+
+    def _add_word_basic_checks(
+            existing_cat_tuple, 
+            existing_tag_tuple, 
+            word=None,
+            meaning=None,
+            categorie=None,
+            tag=None): 
+
+        valid = True
+        if not word : 
+            log.error('missing word for entries with prononciation : '
+                + str(prononciation))
+            valid = False 
+        if not meaning : 
+            log.error('missing meaning for word : '+ str(word))
+            valid = False
+        if categorie and categorie not in existing_cat_tuple : 
+            log.error("can't add "+ word + ", categorie " 
+                + categorie + " does not exists.")
+            valid = False
+        if tag and tag not in existing_tag_tuple : 
+            log.error("can't add "+ word + ", tags " + tag
+                + " does not exists.")
+            valid = False
+        return valid
+
+    def _add_word_gen_vocab_container(
+            self, word, meaning, 
+            prononciation=None,
+            categorie=None,
+            tag=None,
+            example=None): 
+
+        # generating core prononciation
+        # if not prononciation : hiragana_word = word 
+        # else : hiragana_word = prononciation
+
+        hiragana_word  = word if not prononciation else prononciation
+        hiragana_word  = japanese_helpers.convertKanaToHiragana(hiragana_word)
+        valid_hiragana = japanese_helpers.is_word_kana(hiragana_word)
+
+        # TODO : wird if, to investigate...
+        if not valid_hiragana : 
+            log.error('prononciation / word not in kana : '+ str(word))
+            if mendatory_prononciation : 
+                error_list.append(vocab)
+            core_prononciation = None
+            return None
+       
+        core_p = japanese_helpers.gen_core_prononciation(hiragana_word)
+        kanjis_tuple = japanese_helpers.list_kanjis(word)
+
+        return VocabContainer(
+            word=word,
+            prononciation=prononciation, 
+            core_p=core_p,
+            meaning=meaning,
+            example=example,
+            categorie=categorie,
+            tag=tag,
+            kanjis=kanjis_tuple)
 
     def _get_index_as_dict(self, tableObject, field_to_set_as_key = None):
         if not field_to_set_as_key : field_to_set_as_key = tableObject.name 
@@ -519,9 +687,6 @@ class  Japanese_DB_handler(DB_handler):
                             self.select(tableObject, *item_to_get)}
         return data_as_dict
 
-    def update_word(self, word_id, **updadted_fielfs): None
-
-    def add_single_word(self, *vocab_data): None
 
     # DB STAT *****************************************************************
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

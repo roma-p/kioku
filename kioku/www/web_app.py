@@ -265,7 +265,6 @@ select_results_template  = {
     WordListSearchResult : search_result_word_list,
 }
 
-
 # UTILS ***********************************************************************
 # *****************************************************************************
 
@@ -274,7 +273,6 @@ def get_selector_from_url(url) :
     return next(
         (selector for selector in selector_set if selector.sub_url == url), 
         None)
-    
 
 run(app, host='localhost', port=8080, reloader = True)
 

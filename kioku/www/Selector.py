@@ -60,7 +60,6 @@ class Categorie(Selector) :
             vocab_list = jpDB.list_word_by_categorie(selector_id, *item_to_get)
             return vocab_list
 
-
 class Tag(Selector) : 
     selector_type = 'tag'
     sub_url = 'tags'    
@@ -80,7 +79,6 @@ class Tag(Selector) :
             item_to_get = www_config.get_vocab_format_including_id()
             vocab_list = jpDB.list_word_by_tag(selector_id, *item_to_get)
             return vocab_list
-
 
 class Kanjis(Selector) : 
     selector_type = 'kanji'
