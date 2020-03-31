@@ -153,6 +153,7 @@ def header_kioku() :
     title = template('link', text=application_title, url = '/')
     selector_link_list = [create_selector_type_link(selector) 
         for selector in selector_set]
+    selector_link_list.append(template('link', text='words', url='/words'))
     return template('header_kioku', title=title,  
                     selector_link_list=selector_link_list)
 
