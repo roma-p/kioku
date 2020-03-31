@@ -55,12 +55,20 @@ class  Japanese_DB_handler(DB_handler):
         data = self.executeQuery(q)
         return data
 
-    def list_word_by_tag(self, tag_name, *fieldToGet, limit = None): 
+    def list_word_by_tag(self, tag_name, *fieldToGet, limit=None): 
         f = self.base_format
         if not self._check_field(fieldToGet, f.vocab) : return None
         q = Query().select(f.vocab, *fieldToGet)
         q.join_left(f.vocab.tag, f.tags.id)
         q.where().equal(f.tags.name, tag_name)
+        if limit : q.limit(limit)
+        data = self.executeQuery(q)
+        return data
+
+    def list_all_words(self, *fieldToGet, limit=None): 
+        f = self.base_format
+        if not self._check_field(fieldToGet, f.vocab) : return None
+        q = Query().select(f.vocab, *fieldToGet)                
         if limit : q.limit(limit)
         data = self.executeQuery(q)
         return data

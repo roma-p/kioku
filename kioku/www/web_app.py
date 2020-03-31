@@ -24,7 +24,7 @@ search_type_to_selector = {
     'tag' : Tag, 
     'categorie' : Categorie, 
     'kanji' : Kanjis, 
-    'core_prononciation' : Core_P
+    'core prononciation' : Core_P
 }
 
 application_title = 'kioku 記憶'
@@ -69,6 +69,20 @@ def selector_single_page(selector, selector_id):
     
     body = header_kioku()
     body += header_selector(selector, selector_id)
+    body += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
+
+    data = page_base_structure(name, css_file, body)
+    return data
+
+@app.route('/words')
+def words_page(): 
+    item_to_get = www_config.get_vocab_format_including_id()
+    vocab_list  = Japanese_DB_handler().list_all_words(*item_to_get)
+
+    name = application_title + ", words"
+    css_file = main_css
+
+    body = header_kioku()
     body += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
 
     data = page_base_structure(name, css_file, body)
@@ -136,19 +150,19 @@ def page_base_structure(page_name, css_file, body) :
 def header_kioku() :
     global application_title
 
-    title = template('link', text = application_title, url = '/')
+    title = template('link', text=application_title, url = '/')
     selector_link_list = [create_selector_type_link(selector) 
         for selector in selector_set]
-    return template('header_kioku', title = title,  
-                    selector_link_list  = selector_link_list)
+    return template('header_kioku', title=title,  
+                    selector_link_list=selector_link_list)
 
 # selector are : kanjis / tag / categories etc...
 @view('header_selector')
 def header_selector(selector, selector_id) :
     selector_link = create_selector_type_link(selector)
     # return 'prout'
-    return template('header_selector', selector = selector_link, 
-                    selector_id = selector_id)
+    return template('header_selector', selector=selector_link, 
+                    selector_id=selector_id)
 
 @view('header_search')
 def header_search(search_input) :
@@ -196,19 +210,19 @@ def word_page_view(word_data) :
 
     return template(
         'word_page', 
-        word =  word_data['word'], 
-        prononciation = word_data['prononciation'], 
-        meaning = word_data['meaning'], 
-        example = word_data['example'], 
-        categorie = categorie_data, 
-        tag =  tag_data, 
-        kanjis = kanjis_data, 
+        word=word_data['word'], 
+        prononciation=word_data['prononciation'], 
+        meaning=word_data['meaning'], 
+        example=word_data['example'], 
+        categorie=categorie_data, 
+        tag=tag_data, 
+        kanjis=kanjis_data, 
         )
 
 @view('link')
 def create_selector_id_link(selector, selector_id) : 
     url = selector.gen_url_to_selector_id(selector_id)
-    return template('link', text = selector_id, url = url)
+    return template('link', text=selector_id, url=url)
 
 @view('link')
 def create_selector_type_link(selector) : 

@@ -100,7 +100,7 @@ class Kanjis(Selector) :
 
 
 class Core_P(Selector) : 
-    selector_type = 'core_prononciation'
+    selector_type = 'core prononciation'
     sub_url = 'core_prononciations'    
 
     def get_selector_list_data() : 
@@ -116,6 +116,7 @@ class Core_P(Selector) :
             item_to_get = www_config.get_vocab_format_including_id()
             vocab_list = jpDB.list_word_by_core_prononciation(selector_id, *item_to_get)
             return vocab_list
+
 
 
 
