@@ -10,6 +10,7 @@ class Selector(abc.ABC) :
     selector_type = None
     sub_url = None
     parent_url = 'selectors'
+    editable=False
 
     def __call__(self) : return self.selector_type
 
@@ -43,6 +44,17 @@ class Selector(abc.ABC) :
             '/' + cls.sub_url + '/' + str(selector_id)
 
     @classmethod
+    def gen_url_to_selector_edit(cls, selector_id):
+        return '/' + Selector.parent_url + \
+            '/' + cls.sub_url + '/edit/' + str(selector_id)
+
+    @classmethod
+    def gen_url_to_selector_edit_status(cls, selector_id):
+        return '/' + Selector.parent_url + \
+            '/' + cls.sub_url + '/edit_status/' + str(selector_id)
+
+
+    @classmethod
     def get_selector_name_from_id(cls, selector_id): 
         jpDB = Japanese_DB_handler()
         f = jpDB.base_format
@@ -55,7 +67,11 @@ class Selector(abc.ABC) :
 
 class Categorie(Selector) : 
     selector_type = 'categorie'
-    sub_url = 'categories'    
+    sub_url = 'categories'
+    editable = True
+
+    def update_name(orig_name, new_name): 
+        return  Japanese_DB_handler().edit_cat(orig_name, new_name)
 
     def get_selector_list_data() : 
         jpDB = Japanese_DB_handler()
@@ -75,7 +91,12 @@ class Categorie(Selector) :
 
 class Tag(Selector) : 
     selector_type = 'tag'
-    sub_url = 'tags'    
+    sub_url = 'tags'  
+    editable = True  
+
+    def update_name(orig_name, new_name): 
+        return  Japanese_DB_handler().edit_tag(orig_name, new_name)
+
 
     def get_selector_list_data() : 
         jpDB = Japanese_DB_handler()

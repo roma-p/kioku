@@ -8,8 +8,8 @@ from Word import Word
 from www import www_config
 
 
-# CONST ***********************************************************************
-# *****************************************************************************
+# CONST ************************************************************************
+# ******************************************************************************
 
 logging.basicConfig()
 log = logging.getLogger()
@@ -30,8 +30,8 @@ search_type_to_selector = {
 application_title = 'kioku 記憶'
 main_css = '/main.css'
 
-# PAGES ***********************************************************************
-# *****************************************************************************
+# PAGES ************************************************************************
+# ******************************************************************************
 
 @app.route('/')
 @view('main_page')
@@ -70,13 +70,49 @@ def selector_single_page(selector, selector_id):
     css_file = main_css 
     
     body = header_kioku()
-    body += header_selector(selector, selector_name)
+    body += header_selector(selector, selector_id, selector_name)
     body += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
 
     data = page_base_structure(name, css_file, body)
     return data
 
-#def tag_edit_page(selector_id)
+@app.route('/selectors/<selector>/edit/<selector_id>')
+def selector_edit_page(selector, selector_id): 
+    
+    selector = get_selector_from_url(selector)
+
+    name = application_title + ': edit name'
+    css_file = main_css 
+    
+    body = header_kioku()
+    body += _generic_edit_page(selector, selector_id)
+
+    data = page_base_structure(name, css_file, body)
+    return data
+
+@app.route('/selectors/<selector>/edit_status/<selector_id>')
+@view('edit_name_selector_status')
+def selector_edit_status_page(selector, selector_id, method='GET'): 
+    
+    selector = get_selector_from_url(selector)
+
+    if not request.GET.input : return 'NON'
+    new_name = request.GET.input
+    orig_name = selector.get_selector_name_from_id(selector_id)
+
+    status = selector.update_name(orig_name, new_name)
+
+    name = application_title + ': edit status.'
+    css_file = main_css 
+
+    body = header_kioku()
+    body += template('edit_name_selector_status', 
+        status=status, 
+        orig_name=orig_name,
+        new_name=new_name)
+
+    data = page_base_structure(name, css_file, body)
+    return data
 
 @app.route('/words')
 def words_page(): 
@@ -109,7 +145,7 @@ def word_page(word_id):
 #@app.route('/words/edit/<word_id>')
 #def word_edit_page(word_id): 
 
-@app.route('/search', method = 'GET')
+@app.route('/search', method='GET')
 def search_page(): 
     if not request.GET.input : return 'NON'
     search_input = request.GET.input
@@ -129,7 +165,6 @@ def search_page():
                                      single_result)
 
     data = page_base_structure(name, css_file, body)
-
     return data
 
 # distributing static files. 
@@ -138,8 +173,8 @@ def send_static(filename):
     return static_file(filename, root='www/static/')
 
 
-# RENDERING WEB ***************************************************************
-# *****************************************************************************
+# RENDERING WEB ****************************************************************
+# ******************************************************************************
 
 @view('base_structure')
 def page_base_structure(page_name, css_file, body) : 
@@ -161,11 +196,18 @@ def header_kioku() :
 
 # selector are : kanjis / tag / categories etc...
 @view('header_selector')
-def header_selector(selector, selector_id) :
+def header_selector(selector, selector_id, selector_name) :
     selector_link = create_selector_type_link(selector)
+    print('a')
+    if selector.editable: 
+        edit_link = create_selector_edit_link(selector, selector_id)
+    else: 
+        edit_link = None
     # return 'prout'
-    return template('header_selector', selector=selector_link, 
-                    selector_id=selector_id)
+    return template('header_selector', 
+                    selector=selector_link, 
+                    selector_name=selector_name, 
+                    edit_link=edit_link)
 
 @view('header_search')
 def header_search(search_input) :
@@ -194,9 +236,6 @@ def list_selector_id(selector, number, selector_list) :
 
         linked_selector_id_list.append((link, selector_id_occurence))
 
-        #linked_selector_id_list.append((
-        #    create_selector_id_link(selector, selector_id) if selector_id else selector_id,selector_id_occurence))
-
     return template('list_selector_id', selector = selector.sub_url, 
         number = number, selector_id_list = linked_selector_id_list)
 
@@ -208,7 +247,7 @@ def word_page_view(word_data) :
                         for (kanji_id, kanji_name) in word_data['kanjis']]
     else : kanjis_data = None
 
-    if word_data['tag'] and len(word_data['tag']):               #TODO surdegueu, pb dans la BDD
+    if word_data['tag'] and len(word_data['tag']): #TODO surdegueu, pb dans la BDD
         tag_id, tag_name = word_data['tag']
         tag_data = create_selector_id_link(Tag, tag_id, tag_name)
     else : tag_data = None
@@ -238,8 +277,14 @@ def create_selector_id_link(selector, selector_id, selector_name):
 def create_selector_type_link(selector) : 
     url = selector.gen_url_to_selector_type()
     text = selector.selector_type
-    return template('link', text = text, url = url)
+    return template('link', text=text, url=url)
 
+@view('link')
+def create_selector_edit_link(selector, selector_id) : 
+    url = selector.gen_url_to_selector_edit(selector_id)
+    text = 'edit name'
+    return template('link', text=text, url=url)
+    
 @view('link')
 def create_word_id_link(word_id, word) : 
     url = Word.gen_url_to_word(word_id)
@@ -282,6 +327,16 @@ def search_result_selector(input, selectorSearchResult) :
 def search_result_header(result_type, result_value, examples_list = None) : 
     return template('search_result_header', result_type = result_type, 
                     result_value = result_value, examples_list = examples_list)
+
+@view('edit_name_selector')
+def _generic_edit_page(selector_class, selector_id): 
+    ret_link  = selector_class.gen_url_to_selector_edit_status(selector_id)
+    orig_name = selector_class.get_selector_name_from_id(selector_id)
+    return template(
+        'edit_name_selector',
+        editable =selector_class.editable,
+        orig_name= orig_name, 
+        ret_link = ret_link)
 
 select_results_template  = {
     SelectorResult   : search_result_selector,

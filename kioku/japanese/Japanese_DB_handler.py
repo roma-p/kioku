@@ -384,16 +384,18 @@ class  Japanese_DB_handler(DB_handler):
         self.add(table, data_order, *tuple(valid_set))
 
     def edit_tag(self, previous_name, new_name): 
-        if previous_name not in self.list_tag_by_usage(): 
-            log.error("no tag found with name: "+previous_name)
+        f = self.base_format
+        if self.check_tag_existence(new_name):
+            log.error("no tag found with name: "+new_name)
             return False
         self.update(f.tags, f.tags.name, 
             new_name, name=previous_name)
         return True
 
     def edit_cat(self, previous_name, new_name): 
-        if previous_name not in self.list_categorie_by_usage(): 
-            log.error("no categorie found with name: "+previous_name)
+        f = self.base_format
+        if self.check_categorie_existence(new_name):
+            log.error("no categorie found with name: "+new_name)
             return False
         self.update(f.categories, f.categories.name, 
             new_name, name=previous_name)
