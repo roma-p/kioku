@@ -54,9 +54,18 @@ def search_kanji(input) :
     kanji_existence = j.check_kanjis_existence(input)
     if kanji_existence : 
         # if kanji exists, display it right after pottential word in one kanji.
+
+        q = Query().select(f.kanjis, f.kanjis.id)
+        q.where().equal(f.kanjis.name, input)
+        d = j.executeQuery(q)
+        kanji_id = d[0][0]
+
         examples = _create_examples(j.list_word_by_kanjis, input) 
-        search_result_list.append(SelectorResult('kanji', input, 
-                                                    pertinence = 1, *examples))
+        search_result_list.append(SelectorResult('kanji',
+                                                kanji_id,
+                                                input, 
+                                                pertinence = 1, 
+                                                *examples))
     word_list = j.list_word_by_kanjis(input, *vocab_field_to_get)
     # and belowm list of words using this kanjis
     search_result_list.append(WordListSearchResult(*word_list, pertinence = 2))
@@ -157,14 +166,14 @@ def search_categorie(input) :
     _input = _process_search_input(input)
     if not _input : return None
     f = j.base_format
-    q = Query().select(f.categories, f.categories.name)
+    q = Query().select(f.categories, f.categories.id, f.categories.name)
     q.where().equal(f.categories.name, _input)
     categorie_data = j.executeQuery(q)
-    categorie = j.executeQuery(q)[0][0] if categorie_data else None
-    if categorie :
-        examples = _create_examples(j.list_word_by_categorie, categorie)
-        return SelectorResult('categorie', categorie, *examples)
-    return None
+
+    if categorie_data: 
+        cat_id, cat_name = categorie_data[0]
+        examples = _create_examples(j.list_word_by_categorie, cat_name)
+        return SelectorResult('categorie', cat_id, cat_name, *examples)
 
 def search_tag(input) :
     """
@@ -177,14 +186,15 @@ def search_tag(input) :
     _input = _process_search_input(input)
     if not _input : return None
     f = j.base_format
-    q = Query().select(f.tags, f.tags.name)
+    q = Query().select(f.tags, f.tags.id, f.tags.name)
     q.where().equal(f.tags.name, _input)
     tag_data = j.executeQuery(q)
-    tag = tag_data[0][0] if tag_data else None
-    if tag : 
-        examples = _create_examples(j.list_word_by_tag, tag)
-        return SelectorResult('tag', tag, *examples)
-    return None
+
+    if tag_data:
+        tag_id, tag_name = tag_data[0]
+        examples = _create_examples(j.list_word_by_tag, tag_name)
+        return SelectorResult('tag', tag_id, tag_name, *examples)        
+
 
 def search_core_p(input) : 
     """
@@ -201,8 +211,13 @@ def search_core_p(input) :
     word_list = j.list_word_by_core_prononciation(core_p, 
                                                 j.base_format.vocab.word)
     if len(word_list) > 1 : 
+
+        q = Query().select(f.core_prononciations, f.tacore_prononciationsgs.id)
+        q.where().equal(f.core_prononciations.name, core_p)
+        core_p_id = j.executeQuery(q)[0][0]
+
         examples = _create_examples(j.list_word_by_core_prononciation, core_p) 
-        return SelectorResult('core_prononciation', core_p, *examples)
+        return SelectorResult('core_prononciation',core_p_id, core_p, *examples)
     return None
 
 def _create_examples(jpdb_method, input):

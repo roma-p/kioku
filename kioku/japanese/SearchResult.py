@@ -91,17 +91,24 @@ class WordItem() :
 class SelectorResult(SingleSearchResult) : 
     
     valid_selector_type = {
-    'categorie', 
-    'tag', 
-    'core_prononciation', 
-    'kanji'
+        'categorie', 
+        'tag', 
+        'core_prononciation', 
+        'kanji'
     }
 
-    def __init__(self, selector_type, selector_value, *word_examples, pertinence = 3) :
+    def __init__(
+            self,
+            selector_type,  
+            id,
+            selector_value, 
+            *word_examples, 
+            pertinence = 3) :
         
         if selector_type not in self.valid_selector_type : 
             raise ValueError('valid selector types are : ' + set(self.valid_selector_type))
         super().__init__(pertinence)
+        self.id = id
         self.selector_type = selector_type
         self.selector_value = selector_value, 
         self.word_examples = word_examples

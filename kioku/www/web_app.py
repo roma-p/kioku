@@ -123,6 +123,7 @@ def words_page():
     css_file = main_css
 
     body = header_kioku()
+    body += create_add_word_page()
     body += list_vocabulary(www_config.get_vocab_format_as_string(), vocab_list)
 
     data = page_base_structure(name, css_file, body)
@@ -144,6 +145,48 @@ def word_page(word_id):
 
 #@app.route('/words/edit/<word_id>')
 #def word_edit_page(word_id): 
+
+@app.route('/words/add')
+@view('add_word')
+def add_word(): 
+
+    name = application_title + ': add new word'
+    css_file = main_css 
+
+    body =  header_kioku()
+    body += template('add_word')
+
+    data = page_base_structure(name, css_file, body)
+    return data
+
+@app.route('/words/add_word_status')
+@view('add_word_status')
+def add_word_status(method='GET'): 
+    print('aaaaaa')
+
+    #word = request.forms.get('word')
+    #prononciation = request.forms.get('prononciation')
+    #meaning = request.forms.get('meaning')
+    #example = request.forms.get('example')
+    #categorie = request.forms.get('categorie')
+    #tag = request.forms.get('tag')
+
+    status = Japanese_DB_handler().add_single_word(
+       request.GET.word,
+       request.GET.prononciation,
+       request.GET.meaning,
+       request.GET.example,
+       request.GET.categorie,
+       request.GET.tag)
+
+    name = application_title + ': add new word, status'
+    css_file = main_css 
+
+    body  =  header_kioku()
+    body += template('add_word_status', request.GET.word, status)
+
+    data = page_base_structure(name, css_file, body)
+    return data
 
 @app.route('/search', method='GET')
 def search_page(): 
@@ -274,24 +317,28 @@ def create_selector_id_link(selector, selector_id, selector_name):
     return template('link', text=selector_name, url=url)
 
 @view('link')
-def create_selector_type_link(selector) : 
+def create_selector_type_link(selector): 
     url = selector.gen_url_to_selector_type()
     text = selector.selector_type
     return template('link', text=text, url=url)
 
 @view('link')
-def create_selector_edit_link(selector, selector_id) : 
+def create_selector_edit_link(selector, selector_id): 
     url = selector.gen_url_to_selector_edit(selector_id)
     text = 'edit name'
     return template('link', text=text, url=url)
     
 @view('link')
-def create_word_id_link(word_id, word) : 
+def create_word_id_link(word_id, word): 
     url = Word.gen_url_to_word(word_id)
-    return template('link', text = word, url = url)
+    return template('link', text=word, url=url)
+
+@view('link')
+def create_add_word_page(): 
+    return template('link', text='add word', url='/words/add')
 
 @view('search_result_word')
-def search_result_word(input, wordSearchResult) : 
+def search_result_word(input, wordSearchResult): 
     data = search_result_header('word', input)
     # WTF? 
     kanji_data = [create_word_id_link(Kanjis, kanji) for kanji in 
@@ -303,7 +350,7 @@ def search_result_word(input, wordSearchResult) :
                     kanjis = kanji_data)
     return data
 
-def search_result_word_list(input, wordListSearchResult) : 
+def search_result_word_list(input, wordListSearchResult): 
     word_data = [(item.id, item.word, item.prononciation, item.meaning)
                 for item in wordListSearchResult.word_list]
     data = search_result_header('approximations', input)
@@ -312,9 +359,16 @@ def search_result_word_list(input, wordListSearchResult) :
     # data += template('search_result_word_list', vocab_list = word_data)
     return data
 
-def search_result_selector(input, selectorSearchResult) :
+def search_result_selector(input, selectorSearchResult):
     selector = search_type_to_selector[selectorSearchResult.selector_type]
-    linked_selector = create_selector_id_link(selector, input)
+    print('lllllll')
+    print(input)
+    print('lllllll')
+
+    linked_selector = create_selector_id_link(
+        selector,
+        selectorSearchResult.id,
+        selectorSearchResult.selector_value)
     examples_data = [create_word_id_link(word_id, word) for (word_id, word) in 
                     selectorSearchResult.word_examples]
     data = search_result_header(selectorSearchResult.selector_type, 
@@ -324,7 +378,7 @@ def search_result_selector(input, selectorSearchResult) :
     return data
 
 @view('search_result_header')
-def search_result_header(result_type, result_value, examples_list = None) : 
+def search_result_header(result_type, result_value, examples_list = None): 
     return template('search_result_header', result_type = result_type, 
                     result_value = result_value, examples_list = examples_list)
 
@@ -346,7 +400,6 @@ select_results_template  = {
 
 # UTILS ***********************************************************************
 # *****************************************************************************
-
 
 def get_selector_from_url(url) : 
     return next(

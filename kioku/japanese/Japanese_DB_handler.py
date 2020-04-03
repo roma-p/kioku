@@ -452,12 +452,14 @@ class  Japanese_DB_handler(DB_handler):
 
         for vocab in vocab_list : 
             word, prononciation, meaning, categorie, tag, example = vocab
-
+            
             status = self._add_word_basic_checks(
                 existing_cat_tuple,
                 existing_tag_tuple,
-                word, meaning, 
-                categorie, tag)
+                word, 
+                meaning, 
+                categorie,
+                tag)
 
             if not status : 
                 error_list.append(vocab)
@@ -474,7 +476,8 @@ class  Japanese_DB_handler(DB_handler):
                     error_list.append(vocab)
                 else: 
                     word_set.add(word)
-                    core_p_detected_set.add(vocab_container.core_P)
+                    core_p_detected_set.add(vocab_container.core_p
+                        )
                     kanjis_detected_set.update(set(vocab_container.kanjis))
                     vocab_container_list.append(vocab_container)
 
@@ -516,8 +519,6 @@ class  Japanese_DB_handler(DB_handler):
         existing_tag_dict = self._get_index_as_dict(self.base_format.tags)
         existing_core_p_dict = self._get_index_as_dict(self.base_format.core_prononciations)
         existing_kanjis_dict = self._get_index_as_dict(self.base_format.kanjis)
-        word_id_dict = self._get_index_as_dict(self.base_format.vocab, 
-                                               self.base_format.vocab.word)
 
         vocab_final_entries_list = []
         word_kanjis_tmp_entries_dict = {} # < word > : list of kanjis id. 
@@ -556,6 +557,8 @@ class  Japanese_DB_handler(DB_handler):
             *vocab_final_entries_list)
 
         # 6) updating word_kanjis tables. 
+        word_id_dict = self._get_index_as_dict(self.base_format.vocab, 
+                                               self.base_format.vocab.word)
 
         word_kanjis_final_entries_list = []
         for word, kanjis_id_tuple in word_kanjis_tmp_entries_dict.items() : 
@@ -656,6 +659,7 @@ class  Japanese_DB_handler(DB_handler):
         return True
 
     def _add_word_basic_checks(
+            self,
             existing_cat_tuple, 
             existing_tag_tuple, 
             word=None,
